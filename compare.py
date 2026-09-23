@@ -1,0 +1,126 @@
+"""Normalize raw JSONL into Bridg-vs-direct rows and a per-route/venue summary.
+
+gap_bps = (Bridg's listed quote for venue − venue's own UI quote) / 100 × 10,000.
+Positive = Bridg's listing shows more than the venue's own site.
+"""
+import csv, json, statistics, sys
+from collections import defaultdict
+
+VENUE_IDS = {"relay": "relay", "across": "across", "mayan": "mayan", "lifi": "lifi", "debridge": "debridge"}
+
+def load_runs(raw):
+    runs = defaultdict(list)
+    for line in open(raw):
+        r = json.loads(line)
+        runs[r["run_id"]].append(r)
+    return runs
+
+
+def build_rows(runs):
+  rows = []
+  for run_id, recs in runs.items():
+      by = {r["site"]: r for r in recs}
+      b = by.get("bridg")
+      if not b or b.get("status") != "OK":
+          continue
+      bq = b["quote"]
+      listed = {v["venue_id"]: v for v in bq["venues"]}
+      bridg_fees = {}
+      for d in (bq, b.get("fastest_detail") or {}):
+          if d.get("detail_route"):
+              fee = dict(d.get("detail_fees") or []).get("Bridg fee", 0.0)
+              bridg_fees[d["detail_route"].lower().replace(" ", "")] = fee
+      for site, vid in VENUE_IDS.items():
+          v = by.get(site)
+          if not v:
+              continue
+          row = {"run_id": run_id, "route": b["route"], "sample": b["sample"], "venue": site,
+                 "bridg_requestStart": b.get("requestStart"), "bridg_quoteVisible": b.get("quoteVisible"),
+                 "venue_requestStart": v.get("requestStart"), "venue_quoteVisible": v.get("quoteVisible"),
+                 "gap_s": v.get("gap_vs_bridg_s"), "venue_status": v.get("status")}
+          lv = listed.get(vid)
+          row["bridg_listed"] = lv["out"] if lv else None
+          row["bridg_compare_only"] = lv["compare_only"] if lv else None
+          row["bridg_fee_observed"] = bridg_fees.get(vid, dict(bq.get("detail_fees") or []).get("Bridg fee"))
+          q = v.get("quote") or {}
+          row["direct_out"] = q.get("out")
+          row["direct_note"] = ""
+          if site == "debridge" and q.get("fixed_fee_on_top") is not None:
+              row["direct_fixed_fee"] = q["fixed_fee_on_top"]
+              row["direct_out_fee_adj"] = round(q["out"] - q["fixed_fee_on_top"], 6) \
+                  if q.get("fixed_fee_token") == "USDC" else None
+              row["direct_note"] = f"+{q['fixed_fee_on_top']} {q.get('fixed_fee_token')} charged on top of 100 input"
+          if site == "lifi":
+              row["direct_note"] = f"Jumper Best Return via {q.get('best_return_venue')}; max route {q.get('max_out')}"
+          if site == "mayan":
+              row["direct_note"] = f"{q.get('mode')}; UI shows {q.get('display_decimals')} dp"
+          cmp_direct = row.get("direct_out_fee_adj") or row["direct_out"]
+          # a direct quote above the input by >2% is a display anomaly on that site: log it, don't average it
+          if cmp_direct is not None and cmp_direct > 102:
+              row["direct_note"] += f" | ANOMALY: site displayed {cmp_direct} out for 100 in (excluded)"
+              cmp_direct = None
+          row["direct_cmp"] = cmp_direct
+          if row["bridg_listed"] is not None and cmp_direct is not None:
+              row["gap_bps"] = round((row["bridg_listed"] - cmp_direct) / 100 * 1e4, 2)
+              fee = row["bridg_fee_observed"]
+              row["gap_ex_bridg_fee_bps"] = round(row["gap_bps"] + fee / 100 * 1e4, 2) if fee is not None else None
+          rows.append(row)
+  return rows
+
+
+cols = ["route", "sample", "venue", "bridg_listed", "bridg_compare_only", "direct_out", "direct_fixed_fee",
+        "direct_out_fee_adj", "direct_cmp", "gap_bps", "bridg_fee_observed", "gap_ex_bridg_fee_bps", "gap_s",
+        "venue_status", "direct_note", "bridg_requestStart", "bridg_quoteVisible", "venue_requestStart",
+        "venue_quoteVisible", "run_id"]
+
+
+def write_csv(rows, path="data/normalized.csv"):
+    with open(path, "w", newline="") as f:
+        w = csv.DictWriter(f, cols, extrasaction="ignore")
+        w.writeheader()
+        w.writerows(rows)
+
+
+def verdict(venue, gaps, listed_n, n):
+    if listed_n == 0:
+        return "NOT LISTED on Bridg"
+    if not gaps:
+        return "No direct quote"
+    m = statistics.mean(gaps)
+    tol = 4 if venue == "mayan" else 2  # Mayan: Dutch-auction drift + 2-4 dp display rounding
+    if abs(m) <= tol:
+        return "Match (net of Bridg fee)"
+    return "Bridg LOWER than venue" if m < 0 else "Bridg HIGHER than venue"
+
+
+def summarize(rows):
+    summ = defaultdict(list)
+    for r in rows:
+        summ[(r["route"], r["venue"])].append(r)
+    out = []
+    for (route, venue), rs in summ.items():
+        gaps = [r["gap_ex_bridg_fee_bps"] for r in rs if r.get("gap_ex_bridg_fee_bps") is not None]
+        raw = [r["gap_bps"] for r in rs if r.get("gap_bps") is not None]
+        bl = [r["bridg_listed"] for r in rs if r["bridg_listed"] is not None]
+        dl = [r["direct_cmp"] for r in rs if r["direct_cmp"] is not None]
+        mean = lambda xs: round(statistics.mean(xs), 6) if xs else None
+        out.append({"route": route, "venue": venue, "n": len(rs), "n_listed": len(bl), "n_direct": len(dl),
+                    "bridg_avg": mean(bl), "direct_avg": mean(dl),
+                    "gap_ex_fee_bps": round(statistics.mean(gaps), 1) if gaps else None,
+                    "gap_raw_bps": round(statistics.mean(raw), 1) if raw else None,
+                    "gap_min": min(gaps) if gaps else None, "gap_max": max(gaps) if gaps else None,
+                    "compare_only": any(r["bridg_compare_only"] for r in rs),
+                    "verdict": verdict(venue, gaps, len(bl), len(rs))})
+    return out
+
+
+if __name__ == "__main__":
+    rows = build_rows(load_runs(sys.argv[1] if len(sys.argv) > 1 else "data/raw_quotes.jsonl"))
+    write_csv(rows)
+    print(f"{'route':10} {'venue':9} {'n':>2} {'listed':>6} {'bridg avg':>10} {'direct avg':>10} {'ex-fee bps':>10} {'range':>13}  verdict")
+    for s in summarize(rows):
+        f = lambda x: f"{x:.6f}" if x is not None else "—"
+        rng = f"{s['gap_min']:+.1f}..{s['gap_max']:+.1f}" if s["gap_min"] is not None else "—"
+        g = f"{s['gap_ex_fee_bps']:+.1f}" if s["gap_ex_fee_bps"] is not None else "—"
+        print(f"{s['route']:10} {s['venue']:9} {s['n']:>2} {s['n_listed']:>6} {f(s['bridg_avg']):>10} "
+              f"{f(s['direct_avg']):>10} {g:>10} {rng:>13}  {s['verdict']}")

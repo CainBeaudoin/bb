@@ -1,0 +1,109 @@
+Bridg
+Swap
+Docs
+Connect wallet
+From
+Connect wallet
+USDC
+Solana
+≈ $99.98
+Connect a wallet to see your balance
+To
+Select BNB Chain wallet
+USDC
+BNB Chain
+99.870039
+≈ $99.85
+via Rhino · 30s
+Live quotes
+live
+9 venues priced this amount
+Best price
+saves
+49 bps
+Fastest
+1s
+
+One shared price at 1% slippage. Yours is quoted when you execute.
+
+Rhino
+Best price
+30s
+99.870039
+USDC
+Layerswap
+↑
+3s
+19 bps less
+99.678435
+USDC
+Relay
+Fastest
+↑
+1s
+29 bps less
+99.574047
+USDC
+Lifi
+3s
+69 bps less
+99.178408
+USDC
+Debridge
+12s
+122 bps less
+98.647045
+USDC
+Simpleswap
+–
+227 bps less
+97.600365
+USDC
+Husher
+↓
+5m
+12 bps less
+99.7501
+USDC
+Mayan
+Compare only
+↓
+3s
+1 bps more
+99.880708
+USDC
+Meson
+Compare only
+↓
+–
+2 bps less
+99.85005
+USDC
+You receive
+99.870039
+USDC
+Rhino
+Best price
+Route
+Rhino
+Receive at
+–
+You pay
+100 USDC
+$99.98
+Rhino fee
+−0.079961 USDC
+−$0.07
+Bridg fee
+−0.05 USDC
+−$0.04
+You receive
+99.870039 USDC
+$99.85
+Slippage
+1%
+Arrives in
+30s
+Connect wallet
+© 2026 Bridg · developed by
+Docs

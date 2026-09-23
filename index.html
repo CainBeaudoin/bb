@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bridg Benchmark</title>
+<meta name="description" content="Bridg's per-venue quotes cross-checked against each bridge venue's own web UI — 100 USDC on six routes, with screenshot receipts.">
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --surface-2: #f3f2ef;
+  --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --ring: rgba(11,11,11,0.10);
+  --s1: #2a78d6; --s2: #eb6834;
+  --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
+  --neutral: #f0efec;
+  --pos-1: #b7d3f6; --pos-2: #5598e7; --pos-3: #1c5cab;
+  --neg-1: #f6cdcc; --neg-2: #e87473; --neg-3: #b52f2f;
+  --hatch: rgba(11,11,11,0.12);
+  --accent: #5b6e00;
+  --ink-strong: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --surface-2: #232321;
+    --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
+    --s1: #3987e5; --s2: #d95926;
+    --neutral: #383835;
+    --pos-1: #1f3b5e; --pos-2: #256abf; --pos-3: #6da7ec;
+    --neg-1: #4f2322; --neg-2: #b73b3a; --neg-3: #ef8b8a;
+    --hatch: rgba(255,255,255,0.14);
+    --accent: #c9f04d;
+    --ink-strong: #0b0b0b;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --surface-2: #232321;
+  --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
+  --s1: #3987e5; --s2: #d95926;
+  --neutral: #383835;
+  --pos-1: #1f3b5e; --pos-2: #256abf; --pos-3: #6da7ec;
+  --neg-1: #4f2322; --neg-2: #b73b3a; --neg-3: #ef8b8a;
+  --hatch: rgba(255,255,255,0.14);
+  --accent: #c9f04d;
+  --ink-strong: #0b0b0b;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 32px 16px 80px; }
+header { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+h1 { font-size: 28px; line-height: 1.15; margin: 0 0 6px; letter-spacing: -0.01em; }
+h2 { font-size: 18px; margin: 0 0 4px; }
+h3 { font-size: 15px; margin: 0 0 8px; }
+.sub { color: var(--ink-2); margin: 0; max-width: 760px; }
+.meta { color: var(--muted); font-size: 13px; margin-top: 8px; }
+.meta span + span::before { content: " · "; }
+button, select { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--ring);
+  border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+button:hover, select:hover { background: var(--surface-2); }
+section { margin-top: 36px; }
+.sec-head { margin-bottom: 14px; }
+.sec-head p { margin: 0; color: var(--ink-2); font-size: 14px; max-width: 820px; }
+.card { background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; padding: 18px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-top: 24px; }
+.tile .v { font-size: 34px; font-weight: 600; line-height: 1.1; margin: 4px 0 2px; }
+.tile .l { color: var(--ink-2); font-size: 13px; }
+.tile .k { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.issues { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
+.issue { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; align-content: start; }
+.issue .ico { grid-row: span 3; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 13px; font-weight: 700; color: #0b0b0b; margin-top: 1px; }
+.issue .sev { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.issue .t { font-weight: 600; }
+.issue .d { color: var(--ink-2); font-size: 13.5px; }
+.sev-serious .ico { background: var(--serious); } .sev-warning .ico { background: var(--warning); }
+.sev-info .ico { background: var(--axis); color: var(--ink); }
+/* heatmap */
+.hm-scroll { overflow-x: auto; }
+table.hm { border-collapse: separate; border-spacing: 2px; width: 100%; min-width: 640px; }
+.hm th { font-size: 13px; font-weight: 600; color: var(--ink-2); text-align: left; padding: 6px 8px; white-space: nowrap; }
+.hm thead th { text-align: center; }
+.hm td { height: 56px; text-align: center; border-radius: 4px; font-variant-numeric: tabular-nums; cursor: default;
+  position: relative; padding: 4px; outline-offset: 2px; }
+.hm td .n { font-size: 16px; font-weight: 600; display: block; }
+.hm td .s { font-size: 11px; opacity: .85; display: block; }
+.hm td:hover, .hm td:focus { outline: 2px solid var(--ink); }
+.hm td.na { background: repeating-linear-gradient(45deg, var(--hatch) 0 2px, transparent 2px 7px), var(--surface-2);
+  color: var(--ink-2); }
+.hm td.sel-route { }
+.scale { display: flex; align-items: center; gap: 2px; margin-top: 12px; font-size: 12px; color: var(--ink-2); flex-wrap: wrap; }
+.scale i { display: inline-block; width: 38px; height: 12px; border-radius: 2px; }
+.scale .lab { margin: 0 8px; }
+.toggle { display: inline-flex; gap: 0; border: 1px solid var(--ring); border-radius: 8px; overflow: hidden; }
+.toggle button { border: 0; border-radius: 0; }
+.toggle button[aria-pressed="true"] { background: var(--ink); color: var(--page); }
+.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.spacer { flex: 1; }
+.filters { position: sticky; top: 0; z-index: 5; background: var(--page); padding: 10px 0; border-bottom: 1px solid var(--grid); }
+.filters label { font-size: 13px; color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; }
+/* dot plot */
+.dp { width: 100%; display: block; }
+.dp text { fill: var(--ink-2); font-size: 12px; font-family: inherit; }
+.dp .tick text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.dp .grid { stroke: var(--grid); stroke-width: 1; }
+.dp .conn { stroke: var(--axis); stroke-width: 2; }
+.legend { display: flex; gap: 16px; font-size: 13px; color: var(--ink-2); margin-bottom: 6px; flex-wrap: wrap; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+/* tables */
+.tbl-scroll { overflow-x: auto; }
+table.data { border-collapse: collapse; width: 100%; font-size: 13px; }
+.data th { text-align: left; color: var(--muted); font-weight: 600; font-size: 12px; padding: 8px 10px;
+  border-bottom: 1px solid var(--axis); white-space: nowrap; }
+.data td { padding: 7px 10px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+.data td.num, .data th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.pill { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--ring);
+  color: var(--ink-2); }
+.neg { color: var(--critical); } .pos { color: var(--s1); }
+.two { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 860px) { .two { grid-template-columns: 1fr; } }
+/* receipts */
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.rc { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+.rc a.img { display: block; background: var(--surface-2); aspect-ratio: 4 / 3; overflow: hidden; }
+.rc img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.rc .body { padding: 10px 12px 12px; font-size: 12.5px; }
+.rc .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.rc .site { font-weight: 600; font-size: 14px; }
+.rc .out { font-weight: 600; font-variant-numeric: tabular-nums; }
+.rc dl { display: grid; grid-template-columns: auto 1fr; gap: 1px 10px; margin: 8px 0 0; color: var(--ink-2); }
+.rc dt { color: var(--muted); } .rc dd { margin: 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.sha { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+.tip { position: fixed; pointer-events: none; z-index: 20; background: var(--surface); color: var(--ink);
+  border: 1px solid var(--ring); border-radius: 8px; padding: 8px 10px; font-size: 12.5px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.18); max-width: 300px; display: none; }
+.tip .tv { font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.tip .tl { color: var(--ink-2); }
+.tip .kr { display: flex; align-items: center; gap: 6px; }
+.tip .kr b { display: inline-block; width: 12px; height: 2px; }
+details summary { cursor: pointer; color: var(--ink-2); font-size: 14px; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; background: var(--surface-2);
+  padding: 1px 5px; border-radius: 4px; }
+ul.method { margin: 8px 0 0; padding-left: 20px; color: var(--ink-2); font-size: 14px; }
+ul.method li { margin: 3px 0; }
+footer { margin-top: 48px; color: var(--muted); font-size: 12.5px; }
+a { color: var(--s1); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Bridg Benchmark</h1>
+      <p class="sub">Is Bridg's price for each venue the same price that venue shows on its own site? Every quote below is
+        for 100 USDC → USDC, read from each site's own web page in a fresh browser with no wallet connected.</p>
+      <div class="meta" id="meta"></div>
+    </div>
+    <button id="theme" type="button" aria-label="Toggle light or dark theme">Theme</button>
+  </header>
+
+  <div class="tiles" id="tiles"></div>
+
+  <section>
+    <div class="sec-head"><h2>What we found</h2>
+      <p>These are the findings so far. Anything marked as a hypothesis has not been checked yet.</p></div>
+    <div class="issues" id="issues"></div>
+  </section>
+
+  <section>
+    <div class="sec-head row">
+      <div><h2>Bridg's quote vs. the venue's own site</h2>
+        <p id="hm-desc"></p></div>
+      <div class="spacer"></div>
+      <div class="toggle" role="group" aria-label="Basis">
+        <button type="button" data-basis="ex" aria-pressed="true">Excluding Bridg fee</button>
+        <button type="button" data-basis="raw" aria-pressed="false">Including Bridg fee</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="hm-scroll"><table class="hm" id="hm" aria-describedby="hm-desc"></table></div>
+      <div class="scale" id="scale"></div>
+    </div>
+  </section>
+
+  <div class="filters row" style="margin-top:36px">
+    <label>Route <select id="route"></select></label>
+    <label>Sample <select id="sample"></select></label>
+    <span class="meta" style="margin:0">Applies to every section below</span>
+  </div>
+
+  <section>
+    <div class="sec-head"><h2 id="route-title"></h2>
+      <p>Averaged over all samples. <span style="color:var(--s1)">●</span> is Bridg's listed quote for the venue.
+        <span style="color:var(--s2)">●</span> is the venue's own site. For deBridge, the fee its site adds on top of
+        the 100 USDC input is subtracted, so both sides are compared the same way.</p></div>
+    <div class="two">
+      <div class="card">
+        <div class="legend"><span><i style="background:var(--s1)"></i>Bridg's listing</span><span><i style="background:var(--s2)"></i>Venue's own site</span></div>
+        <svg class="dp" id="dp" role="img" aria-label="Dot plot of Bridg vs venue quotes"></svg>
+      </div>
+      <div class="card tbl-scroll">
+        <h3>Each sample</h3>
+        <table class="data" id="samples"></table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Every venue Bridg priced</h2>
+      <p>All the quotes Bridg's page showed for this route and sample, in its own order. "Compare only" venues are shown
+        for reference and can't be executed through Bridg.</p></div>
+    <div class="two">
+      <div class="card tbl-scroll"><table class="data" id="board"></table></div>
+      <div class="card" id="breakdown"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Receipts</h2>
+      <p>A screenshot of each site at the moment its quote was recorded. Times are UTC. Click a screenshot to open the
+        full page. The SHA-256 hash is recorded in the raw data file.</p></div>
+    <div class="gallery" id="gallery"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>How this was measured</h2></div>
+    <div class="card">
+      <ul class="method">
+        <li>Each site was opened in its own fresh Playwright Chromium browser, with no shared cookies and no wallet. Nothing
+          was connected, signed or swapped.</li>
+        <li>For each route, all six sites load with the route already selected. The runner then types <code>100</code>
+          into every page at the same moment and records when the quote appears. Every venue's quote appeared within
+          ~1.2 s of Bridg's.</li>
+        <li>Gap in bps = (Bridg's listed quote − venue's own quote) ÷ 100 × 10,000. Negative means Bridg shows less.
+          "Excluding Bridg fee" adds Bridg's own platform fee back, so the gap reflects only the venue's price.</li>
+        <li>USDC contracts: Solana <code>EPjF…Dt1v</code>, Ethereum <code>0xA0b8…eB48</code>, Base
+          <code>0x8335…2913</code>, BSC <code>0x8AC7…580d</code>. BSC's is Binance-Peg USDC, which has 18 decimals and
+          is bridged, not native Circle USDC.</li>
+      </ul>
+      <p class="meta">Raw data: <a href="data/raw_quotes.jsonl">raw_quotes.jsonl</a> (append-only) ·
+        <a href="data/normalized.csv">normalized.csv</a> · <a href="dashboard/data.json">data.json</a></p>
+      <details style="margin-top:10px"><summary id="fail-sum"></summary><div class="tbl-scroll"><table class="data" id="fails"></table></div></details>
+    </div>
+  </section>
+
+  <footer id="foot"></footer>
+</div>
+<div class="tip" id="tip" role="tooltip"></div>
+
+<script>
+(() => {
+  // theme toggle (persisted per viewer; page works without storage)
+  const root = document.documentElement;
+  try { const t = localStorage.getItem("bb-theme"); if (t) root.dataset.theme = t; } catch (e) {}
+  document.getElementById("theme").addEventListener("click", () => {
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("bb-theme", root.dataset.theme); } catch (e) {}
+    if (window.__redraw) window.__redraw();
+  });
+})();
+
+const $ = (id) => document.getElementById(id);
+const el = (tag, props = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k === "class") n.className = v; else if (k === "text") n.textContent = v;
+    else if (k === "style") n.style.cssText = v; else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+const fmt = (x, d = 6) => x == null ? "—" : Number(x).toFixed(d);
+const sgn = (x, d = 1) => x == null ? "—" : (x > 0 ? "+" : "") + Number(x).toFixed(d);
+const arrow = (r) => r.replace("->", " → ");
+const time = (iso) => iso ? iso.slice(11, 23) : "—";
+const tip = $("tip");
+function showTip(e, nodes) {
+  tip.replaceChildren(...nodes); tip.style.display = "block";
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + w > innerWidth - 8) x = e.clientX - w - 14;
+  if (y + h > innerHeight - 8) y = e.clientY - h - 14;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+const hideTip = () => { tip.style.display = "none"; };
+const focusTip = (node, nodes) => {
+  const r = node.getBoundingClientRect();
+  showTip({ clientX: r.left + r.width / 2, clientY: r.bottom }, nodes);
+};
+
+fetch("dashboard/data.json").then(r => r.json()).then(D => {
+  const S = D.sites, V = D.venues;
+  const sumBy = {}; D.summary.forEach(s => sumBy[s.route + "|" + s.venue] = s);
+
+  // meta + tiles
+  $("meta").append(
+    el("span", { text: `Collected ${D.window.first.slice(0, 10)}, ${time(D.window.first).slice(0, 5)}–${time(D.window.last).slice(0, 5)} UTC` }),
+    el("span", { text: `${D.routes.length} routes` }),
+    el("span", { text: `${D.n_runs} synchronized runs` }),
+    el("span", { text: `${D.n_records} quote records` }));
+  const pairs = D.summary, matched = pairs.filter(p => p.verdict.startsWith("Match")).length;
+  const lower = pairs.filter(p => p.verdict.startsWith("Bridg LOWER")), notListed = pairs.filter(p => p.verdict.startsWith("NOT")).length;
+  const worst = Math.min(...pairs.filter(p => p.gap_ex_fee_bps != null).map(p => p.gap_ex_fee_bps));
+  const tiles = [
+    ["Match", matched + " / " + pairs.length, "route × venue pairs where Bridg's quote matches the venue's site (net of Bridg fee)"],
+    ["Bridg lower", lower.length, "pairs where Bridg's listing pays less than the venue's own site"],
+    ["Not listed", notListed, "pairs where the venue quoted on its own site but was missing from Bridg"],
+    ["Worst gap", sgn(worst) + " bps", "largest shortfall, excluding Bridg's own fee"],
+  ];
+  $("tiles").append(...tiles.map(([k, v, l]) => el("div", { class: "card tile" }, el("div", { class: "k", text: k }), el("div", { class: "v", text: v }), el("div", { class: "l", text: l }))));
+
+  // issues
+  const sevIcon = { serious: "!", warning: "!", info: "i" };
+  $("issues").append(...D.issues.map(i => el("div", { class: "card issue sev-" + i.severity },
+    el("span", { class: "ico", "aria-hidden": "true", text: sevIcon[i.severity] }),
+    el("span", { class: "sev", text: i.severity }), el("span", { class: "t", text: i.title }), el("span", { class: "d", text: i.detail }))));
+
+  // heatmap
+  let basis = "ex";
+  const bins = [[-Infinity, -30, "neg-3"], [-30, -10, "neg-2"], [-10, -2, "neg-1"], [-2, 2, "neutral"], [2, 10, "pos-1"], [10, 30, "pos-2"], [30, Infinity, "pos-3"]];
+  const cls = (v) => bins.find(([a, b]) => v >= a && v < b) || bins[3];
+  const inkFor = (tok) => (tok.endsWith("-3") ? "var(--ink-strong)" : "var(--ink)");
+  function drawHM() {
+    $("hm-desc").textContent = basis === "ex"
+      ? "Average gap in bps with Bridg's own fee added back, so it shows whether Bridg reports the venue's price correctly. Red means Bridg shows less than the venue's site."
+      : "Average gap in bps as a user sees it, including Bridg's platform fee (usually 5 bps). Red means Bridg shows less than the venue's site.";
+    const t = $("hm"); t.replaceChildren();
+    t.append(el("thead", {}, el("tr", {}, el("th", { text: "" }), ...V.map(v => el("th", { scope: "col", text: S[v] })))));
+    const tb = el("tbody");
+    for (const r of D.routes) {
+      const tr = el("tr", {}, el("th", { scope: "row", text: arrow(r) }));
+      for (const v of V) {
+        const s = sumBy[r + "|" + v];
+        const g = s && (basis === "ex" ? s.gap_ex_fee_bps : s.gap_raw_bps);
+        let td;
+        if (!s || s.n_listed === 0) {
+          td = el("td", { class: "na", tabindex: "0" }, el("span", { class: "n", text: "Not listed" }), el("span", { class: "s", text: s && s.direct_avg ? "venue: " + fmt(s.direct_avg, 3) : "" }));
+        } else if (g == null) {
+          td = el("td", { class: "na", tabindex: "0" }, el("span", { class: "n", text: "—" }), el("span", { class: "s", text: "no direct quote" }));
+        } else {
+          const tok = cls(g)[2];
+          td = el("td", { tabindex: "0", style: `background:var(--${tok});color:${inkFor(tok)}` },
+            el("span", { class: "n", text: sgn(g) }), el("span", { class: "s", text: s.compare_only ? "compare only" : s.n + " samples" }));
+        }
+        const nodes = () => {
+          if (!s) return [el("div", { text: "No data" })];
+          const out = [];
+          if (g != null) out.push(el("div", { class: "tv", text: sgn(g) + " bps" }));
+          out.push(el("div", { class: "tl", text: `${S[v]} · ${arrow(r)}` }));
+          out.push(el("div", { class: "kr" }, el("b", { style: "background:var(--s1)" }), el("span", { text: "Bridg " + fmt(s.bridg_avg) })));
+          out.push(el("div", { class: "kr" }, el("b", { style: "background:var(--s2)" }), el("span", { text: "Venue " + fmt(s.direct_avg) })));
+          if (s.gap_min != null) out.push(el("div", { class: "tl", text: `range ${sgn(s.gap_min)} to ${sgn(s.gap_max)} (ex-fee) · ${s.verdict}` }));
+          else out.push(el("div", { class: "tl", text: s.verdict }));
+          return out;
+        };
+        td.addEventListener("pointermove", e => showTip(e, nodes()));
+        td.addEventListener("pointerleave", hideTip);
+        td.addEventListener("focus", () => focusTip(td, nodes()));
+        td.addEventListener("blur", hideTip);
+        td.addEventListener("click", () => { $("route").value = r; drawRoute(); $("route-title").scrollIntoView({ behavior: "smooth" }); });
+        tr.append(td);
+      }
+      tb.append(tr);
+    }
+    t.append(tb);
+    const sc = $("scale"); sc.replaceChildren(el("span", { class: "lab", text: "Bridg shows less" }));
+    const labels = ["≤ −30", "−30…−10", "−10…−2", "±2", "2…10", "10…30", "≥ 30"];
+    bins.forEach((b, i) => sc.append(el("i", { title: labels[i] + " bps", style: `background:var(--${b[2]})` })));
+    sc.append(el("span", { class: "lab", text: "Bridg shows more" }),
+      el("i", { style: "background:repeating-linear-gradient(45deg,var(--hatch) 0 2px,transparent 2px 7px),var(--surface-2)" }),
+      el("span", { class: "lab", text: "Not listed on Bridg" }));
+  }
+  document.querySelectorAll("[data-basis]").forEach(b => b.addEventListener("click", () => {
+    basis = b.dataset.basis;
+    document.querySelectorAll("[data-basis]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    drawHM();
+  }));
+
+  // filters
+  D.routes.forEach(r => $("route").append(el("option", { value: r, text: arrow(r) })));
+  const samples = [...new Set(D.boards.map(b => b.sample))].sort();
+  samples.forEach(s => $("sample").append(el("option", { value: s, text: "Sample " + s })));
+  $("route").addEventListener("change", drawRoute);
+  $("sample").addEventListener("change", drawRoute);
+
+  function drawDot(route) {
+    const svg = $("dp"); svg.replaceChildren();
+    const ns = "http://www.w3.org/2000/svg", mk = (t, a = {}) => { const n = document.createElementNS(ns, t); for (const k in a) n.setAttribute(k, a[k]); return n; };
+    const rows = V.map(v => sumBy[route + "|" + v]).filter(Boolean);
+    const vals = rows.flatMap(s => [s.bridg_avg, s.direct_avg]).filter(x => x != null);
+    let lo = Math.min(...vals), hi = Math.max(...vals);
+    const pad = Math.max(0.05, (hi - lo) * 0.08); lo -= pad; hi += pad;
+    const W = svg.clientWidth || 600, L = 120, R = 20, T = 8, rowH = 44, H = T + rows.length * rowH + 28;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("height", H);
+    const x = v => L + (v - lo) / (hi - lo) * (W - L - R);
+    const step = (hi - lo) > 1 ? 0.25 : (hi - lo) > 0.4 ? 0.1 : 0.05;
+    for (let t = Math.ceil(lo / step) * step; t <= hi; t += step) {
+      const g = mk("g", { class: "tick" });
+      g.append(mk("line", { class: "grid", x1: x(t), x2: x(t), y1: T, y2: H - 22 }));
+      const tx = mk("text", { x: x(t), y: H - 6, "text-anchor": "middle" }); tx.textContent = t.toFixed(2); g.append(tx);
+      svg.append(g);
+    }
+    rows.forEach((s, i) => {
+      const cy = T + i * rowH + rowH / 2;
+      const lab = mk("text", { x: 0, y: cy + 4 }); lab.textContent = S[s.venue]; svg.append(lab);
+      const g = mk("g", { tabindex: "0" });
+      g.append(mk("rect", { x: L, y: cy - rowH / 2 + 2, width: W - L - R, height: rowH - 4, fill: "transparent" }));
+      if (s.bridg_avg != null && s.direct_avg != null)
+        g.append(mk("line", { class: "conn", x1: x(s.bridg_avg), x2: x(s.direct_avg), y1: cy, y2: cy }));
+      if (s.direct_avg != null) g.append(mk("circle", { cx: x(s.direct_avg), cy, r: 6, fill: "var(--s2)", stroke: "var(--surface)", "stroke-width": 2 }));
+      if (s.bridg_avg != null) g.append(mk("circle", { cx: x(s.bridg_avg), cy, r: 6, fill: "var(--s1)", stroke: "var(--surface)", "stroke-width": 2 }));
+      else { const t = mk("text", { x: x(s.direct_avg) - 10, y: cy + 4, "text-anchor": "end" }); t.textContent = "not on Bridg"; g.append(t); }
+      const nodes = () => [
+        el("div", { class: "tv", text: s.gap_ex_fee_bps != null ? sgn(s.gap_ex_fee_bps) + " bps ex-fee" : s.verdict }),
+        el("div", { class: "tl", text: S[s.venue] }),
+        el("div", { class: "kr" }, el("b", { style: "background:var(--s1)" }), el("span", { text: "Bridg " + fmt(s.bridg_avg) })),
+        el("div", { class: "kr" }, el("b", { style: "background:var(--s2)" }), el("span", { text: "Venue " + fmt(s.direct_avg) }))];
+      g.addEventListener("pointermove", e => showTip(e, nodes()));
+      g.addEventListener("pointerleave", hideTip);
+      g.addEventListener("focus", () => focusTip(g, nodes()));
+      g.addEventListener("blur", hideTip);
+      svg.append(g);
+    });
+  }
+
+  function drawRoute() {
+    const route = $("route").value, sample = +$("sample").value;
+    $("route-title").textContent = arrow(route) + " — Bridg vs each venue";
+    drawDot(route);
+    // samples table
+    const st = $("samples"); st.replaceChildren();
+    st.append(el("thead", {}, el("tr", {}, ...["Venue", "S", "Bridg", "Venue", "Gap", "Ex-fee", "Δt s"].map((h, i) => el("th", { class: i > 1 ? "num" : "", text: h })))));
+    const tb = el("tbody");
+    D.samples.filter(r => r.route === route).sort((a, b) => V.indexOf(a.venue) - V.indexOf(b.venue) || a.sample - b.sample).forEach(r => {
+      const g = r.gap_ex_bridg_fee_bps;
+      tb.append(el("tr", {}, el("td", { text: S[r.venue] }), el("td", { text: r.sample }),
+        el("td", { class: "num", text: r.bridg_listed == null ? "not listed" : fmt(r.bridg_listed) }),
+        el("td", { class: "num", text: fmt(r.direct_cmp), title: r.direct_note || "" }),
+        el("td", { class: "num", text: sgn(r.gap_bps) }),
+        el("td", { class: "num " + (g == null ? "" : g < -2 ? "neg" : g > 2 ? "pos" : ""), text: sgn(g) }),
+        el("td", { class: "num", text: r.gap_s == null ? "—" : r.gap_s.toFixed(2) })));
+    });
+    st.append(tb);
+    // board
+    const b = D.boards.find(x => x.route === route && x.sample === sample) || D.boards.find(x => x.route === route);
+    const bt = $("board"); bt.replaceChildren();
+    bt.append(el("thead", {}, el("tr", {}, ...["#", "Venue", "Quote (USDC)", "vs best", "ETA", ""].map((h, i) => el("th", { class: [2].includes(i) ? "num" : "", text: h })))));
+    const bb = el("tbody");
+    b.venues.forEach((v, i) => bb.append(el("tr", {}, el("td", { text: i + 1 }), el("td", { text: v.venue }),
+      el("td", { class: "num", text: fmt(v.out) }), el("td", { text: v.delta || "best" }), el("td", { text: v.eta || "" }),
+      el("td", {}, ...v.tags.map(t => el("span", { class: "pill", text: t }))))));
+    bt.append(bb);
+    const bd = $("breakdown"); bd.replaceChildren(el("h3", { text: "Bridg's fee breakdown" }),
+      el("p", { class: "meta", style: "margin-top:0", text: "Bridg only breaks down the route selected under Best price or Fastest, so these are the only two available." }));
+    for (const [k, d] of [["Best price", b.best], ["Fastest", b.fastest]]) {
+      if (!d) continue;
+      const route_ = d.route || d.detail_route, out = d.out != null ? d.out : d.best_out, fees = d.fees || d.detail_fees || [];
+      bd.append(el("div", { style: "margin:10px 0 14px" },
+        el("div", { class: "row" }, el("span", { class: "pill", text: k }), el("strong", { text: route_ || "—" }), el("span", { class: "spacer" }), el("strong", { class: "num", text: fmt(out) + " USDC" })),
+        ...fees.map(([n, a]) => el("div", { class: "row", style: "font-size:13px;color:var(--ink-2);margin-top:3px" }, el("span", { text: n }), el("span", { class: "spacer" }), el("span", { text: "−" + fmt(a) })))));
+    }
+    if (b.picked) bd.append(el("p", { class: "meta", text: "Assets picked on Bridg: " + b.picked.map(p => p.replace(/\n/g, " ")).join(" → ") }));
+    // receipts
+    const g = $("gallery"); g.replaceChildren();
+    const order = ["bridg", ...V];
+    D.receipts.filter(r => r.route === route && r.sample === sample).sort((a, c) => order.indexOf(a.site) - order.indexOf(c.site)).forEach(r => {
+      const dl = el("dl");
+      const add = (k, v, c) => dl.append(el("dt", { text: k }), el("dd", { class: c || "", text: v }));
+      add("typed", time(r.requestStart)); add("quote", time(r.quoteVisible)); add("shot", time(r.screenshotAt));
+      if (r.gap_s != null) add("Δ vs Bridg", r.gap_s.toFixed(3) + " s");
+      add("sha256", r.crop.sha256.slice(0, 16) + "…", "sha");
+      const link = el("a", { class: "img", href: r.full.path, target: "_blank", rel: "noopener" },
+        el("img", { src: r.crop.path, loading: "lazy", alt: `${S[r.site]} quote screenshot, ${arrow(r.route)} sample ${r.sample}` }));
+      g.append(el("div", { class: "card rc" }, link, el("div", { class: "body" },
+        el("div", { class: "top" }, el("span", { class: "site", text: S[r.site] }), el("span", { class: "out", text: fmt(r.out) })), dl)));
+    });
+    if (!g.children.length) g.append(el("p", { class: "meta", text: "No receipts for this route and sample." }));
+  }
+
+  // failures
+  $("fail-sum").textContent = `${D.failures.length} runs where a site didn't return a quote (kept in the raw data)`;
+  const ft = $("fails");
+  ft.append(el("thead", {}, el("tr", {}, ...["Site", "Route", "S", "Status", "Error"].map(h => el("th", { text: h })))));
+  const fb = el("tbody");
+  D.failures.forEach(f => fb.append(el("tr", {}, el("td", { text: S[f.site] }), el("td", { text: arrow(f.route) }), el("td", { text: f.sample }), el("td", { text: f.status }), el("td", { style: "white-space:normal", text: f.error.split("\\n")[0].slice(0, 140) }))));
+  ft.append(fb);
+  $("foot").textContent = `Generated ${D.generated_at}. Pre-transaction quotes only; no wallet was connected, signed, or swapped.`;
+
+  drawHM(); drawRoute();
+  window.__redraw = () => drawDot($("route").value);
+  addEventListener("resize", () => drawDot($("route").value));
+}).catch(err => {
+  document.querySelector(".wrap").append(el("p", { class: "card", text: "Couldn't load dashboard/data.json: " + err.message }));
+});
+</script>
+</body>
+</html>

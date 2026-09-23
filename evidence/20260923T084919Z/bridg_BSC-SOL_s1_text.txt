@@ -1,0 +1,113 @@
+Bridg
+Swap
+Docs
+Connect wallet
+From
+Connect wallet
+USDC
+BNB Chain
+≈ $99.98
+Connect a wallet to see your balance
+To
+Select Solana wallet
+USDC
+Solana
+99.631802
+≈ $99.61
+via Mayan · 3s
+Live quotes
+live
+10 venues priced this amount
+Best price
+saves
+34 bps
+Fastest
+1s
+
+One shared price at 1% slippage. Yours is quoted when you execute.
+
+Mayan
+Best price
+3s
+99.631802
+USDC
+Relay
+Fastest
+1s
+ties best
+99.630319
+USDC
+Layerswap
+22s
+13 bps less
+99.495353
+USDC
+Rhino
+↑
+30s
+25 bps less
+99.380207
+USDC
+Lifi
+↑
+3s
+43 bps less
+99.199736
+USDC
+Debridge
+↑
+1s
+76 bps less
+98.874504
+USDC
+Symbiosis
+↑
+3m
+125 bps less
+98.376476
+USDC
+Simpleswap
+↑
+–
+208 bps less
+97.551574
+USDC
+Husher
+↓
+7m
+18 bps less
+99.45025
+USDC
+Meson
+–
+18 bps less
+99.45025
+USDC
+You receive
+99.631802
+USDC
+Mayan
+Best price
+Route
+Mayan
+Receive at
+–
+You pay
+100 USDC
+$99.98
+Mayan fee
+−0.318199 USDC
+−$0.31
+Bridg fee
+−0.05 USDC
+−$0.04
+You receive
+99.631802 USDC
+$99.61
+Slippage
+1%
+Arrives in
+3s
+Connect wallet
+© 2026 Bridg · developed by
+Docs
