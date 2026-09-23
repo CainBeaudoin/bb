@@ -82,20 +82,24 @@ for run_id, recs in runs.items():
             receipts[-1]["routes"] = q.get("routes")
 
 issues = [
-    {"severity": "serious", "title": "Relay priced ~20 bps below relay.link on every EVM → Solana route",
-     "detail": "ETH→SOL, BSC→SOL, Base→SOL: −19.9 to −20.0 bps in every sample after adding back Bridg's 5 bps "
-               "(~0.20 USDC more 'Relay fee'). SOL→ETH was −25 bps this campaign (Ethereum gas was elevated); "
-               "SOL→BSC and SOL→Base match. Hypothesis (unverified): Bridg's quote includes Solana USDC token-account "
-               "rent that relay.link omits when no recipient wallet is set."},
+    {"severity": "warning", "title": "Relay ~20 bps below relay.link into Solana — explained: new USDC account cost",
+     "detail": "ETH→SOL, BSC→SOL, Base→SOL: −19.9 to −20.0 bps in every sample after adding back Bridg's 5 bps. Verified "
+               "via Bridg's API (indicative quotes, 14:45:35 UTC, saved in data/api/): for a recipient that already holds USDC, Bridg prices Relay "
+               "at 99.945676 — identical to relay.link. For a fresh Solana address, Relay's 'destination fill gas' rises from "
+               "0.004 to 0.205 USDC (+20.1 bps): the cost of creating the recipient's USDC token account. Bridg's no-wallet "
+               "page prices that case; relay.link's no-wallet page assumes the account exists. Mayan and NEAR Intents shift "
+               "the same way. SOL→ETH was −25 bps this campaign (Ethereum gas elevated)."},
     {"severity": "serious", "title": "LI.FI and SimpleSwap rows are far below their own sites",
-     "detail": "LI.FI: 15–96 bps below jumper.exchange's Best Return on every route. SimpleSwap: 48–272 bps below "
-               "simpleswap.io's default floating 'Best rate'. Hypothesis (unverified): a different route/rate type or an "
-               "integrator fee in Bridg's requests."},
-    {"severity": "serious", "title": "Meson, Husher and Allbridge rows look like flat estimates, not live quotes",
-     "detail": "Bridg shows exactly 99.9 or 99.5 minus its own fee on every sample (99.85005 / 99.45025; 99.75015 on "
-               "SOL→ETH where Bridg's fee tier was 15 bps). When Ethereum gas rose, Meson's own site dropped to 98.56 on "
-               "SOL→ETH while Bridg still showed 99.75 (+134 bps). Husher's own site is 15–25 bps lower than Bridg's row. "
-               "Allbridge matches only because its site also shows a flat 99.90."},
+     "detail": "LI.FI: 15–96 bps below jumper.exchange's Best Return on every route. Bridg's API shows a 'LIFI Fixed Fee' "
+               "of 0.25 USDC (25 bps) on its LI.FI row that Jumper doesn't charge, plus the ~0.20 new-account cost into "
+               "Solana — together ~45 bps; the rest is unexplained (likely a different route). SimpleSwap: 48–272 bps below "
+               "simpleswap.io's default floating 'Best rate'; Bridg's API lists no fee breakdown for it."},
+    {"severity": "serious", "title": "Meson and Husher rows are flat fee formulas, not live quotes (confirmed)",
+     "detail": "Bridg's API fee breakdown: Meson = a fixed 'Meson LP fee' of 0.50 USDC; Husher = fixed 0.20 exchange fee + "
+               "0.30 delivery fee; Allbridge = fixed 0.10 CCTP service fee. So Bridg shows exactly 99.5/99.9 minus its own fee "
+               "(99.45025 / 99.85005; 99.75015 on SOL→ETH at the 15 bps tier). When Ethereum gas rose, Meson's own site dropped "
+               "to 98.56 on SOL→ETH while Bridg still showed 99.75 (+134 bps). Husher's own site charges 0.35% (not 0.20), so "
+               "it's 15–25 bps lower than Bridg's row. Allbridge matches because its site also shows a flat 99.90."},
     {"severity": "serious", "title": "Bridg lists venues whose own site can't quote these routes",
      "detail": "Rhino.fi (Bridg's best price on SOL→BSC) — retail app shut down Aug 2026. Eco — its portal has no "
                "Solana or BNB Chain, yet Bridg lists Eco on SOL↔ETH/Base. NEAR Intents — public app moved behind a login."},
@@ -111,10 +115,11 @@ issues = [
                "deposits from 7 chains into one USD balance with no quote."},
     {"severity": "warning", "title": "Layerswap 3–13.5 bps below layerswap.io",
      "detail": "Identical across samples: −13.4/−13.5 bps on Solana-source routes, −3.2 to −7.9 bps into Solana."},
-    {"severity": "warning", "title": "CCTP gap is a comparison limit, not a verdict",
-     "detail": "Circle's own bridge has no Solana, so CCTP is read from Portal (Wormhole), which hides its executor fee "
-               "until a wallet connects. Portal's 99.99 is before that fee; Bridg's CCTP row (96.52 on SOL→ETH, −332 bps "
-               "this campaign) likely includes Ethereum destination gas. Into Solana the gap is −14 to −15 bps."},
+    {"severity": "warning", "title": "CCTP gap is Portal hiding a fee, not a Bridg error",
+     "detail": "Circle's own bridge has no Solana, so CCTP is read from Portal (Wormhole), which hides its relayer fee until "
+               "a wallet connects. Bridg's API itemises it: 'Circle Forwarding Service fee and destination gas' = 0.16 USDC "
+               "on ETH→SOL, which is the −14 to −15 bps gap into Solana. On SOL→ETH (−332 bps this campaign) the same line "
+               "carries Ethereum destination gas, which was elevated."},
     {"severity": "warning", "title": "Bridg's fee isn't applied to every venue; deBridge's fixed fee jumps around",
      "detail": "deBridge, Symbiosis and Mayan (ETH→SOL) match their own sites before adding back Bridg's 5 bps — Bridg "
                "appears not to take its fee on those rows. deBridge's own site adds a fixed fee on top of the input that "
