@@ -52,6 +52,9 @@ async def type_into(loc):
 
 # ---------------------------------------------------------------- Bridg
 class Bridg:
+    bridg_id = None
+    crop = (140, 40, 1120, 960)
+    label_url = None
     name = "bridg"
 
     async def _pick(self, page, idx, chain):
@@ -119,6 +122,9 @@ class Bridg:
 
 # ---------------------------------------------------------------- Relay
 class Relay:
+    bridg_id = 'relay'
+    crop = (480, 140, 440, 500)
+    label_url = None
     name = "relay"
 
     async def setup(self, page, route):
@@ -143,6 +149,9 @@ class Relay:
 
 # ---------------------------------------------------------------- deBridge
 class DeBridge:
+    bridg_id = 'debridge'
+    crop = (440, 240, 520, 640)
+    label_url = None
     name = "debridge"
 
     async def setup(self, page, route):
@@ -175,6 +184,9 @@ class DeBridge:
 
 # ---------------------------------------------------------------- Jumper (LI.FI)
 class Jumper:
+    bridg_id = 'lifi'
+    crop = (270, 160, 900, 740)
+    label_url = None
     name = "lifi"
 
     async def setup(self, page, route):
@@ -206,6 +218,9 @@ class Jumper:
 
 # ---------------------------------------------------------------- Across
 class Across:
+    bridg_id = 'across'
+    crop = (370, 260, 660, 480)
+    label_url = None
     name = "across"
 
     async def setup(self, page, route):
@@ -228,6 +243,9 @@ class Across:
 
 # ---------------------------------------------------------------- Mayan
 class Mayan:
+    bridg_id = 'mayan'
+    crop = (470, 140, 460, 600)
+    label_url = None
     name = "mayan"
 
     async def _pick(self, page, idx, chain):
@@ -268,3 +286,23 @@ class Mayan:
 
 
 ADAPTERS = {a.name: a for a in (Bridg(), Relay(), DeBridge(), Jumper(), Across(), Mayan())}
+
+# Additional venues live in adapters/<name>.py, each exposing ADAPTER = <instance> with the same
+# interface (name, bridg_id, crop, setup, enter, read) and optionally BLOCKED = {"reason": ...}.
+BLOCKED = {}
+
+
+def _load_extra():
+    import importlib, pkgutil, os
+    pkg = os.path.join(os.path.dirname(__file__), "adapters")
+    for m in pkgutil.iter_modules([pkg]):
+        if m.name.startswith("_"):
+            continue
+        mod = importlib.import_module(f"adapters.{m.name}")
+        if getattr(mod, "ADAPTER", None) is not None:
+            ADAPTERS[mod.ADAPTER.name] = mod.ADAPTER
+        if getattr(mod, "BLOCKED", None):
+            BLOCKED[m.name] = mod.BLOCKED
+
+
+_load_extra()

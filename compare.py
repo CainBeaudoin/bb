@@ -6,7 +6,8 @@ Positive = Bridg's listing shows more than the venue's own site.
 import csv, json, statistics, sys
 from collections import defaultdict
 
-VENUE_IDS = {"relay": "relay", "across": "across", "mayan": "mayan", "lifi": "lifi", "debridge": "debridge"}
+from sites import ADAPTERS
+VENUE_IDS = {n: a.bridg_id for n, a in ADAPTERS.items() if getattr(a, "bridg_id", None)}
 
 def load_runs(raw):
     runs = defaultdict(list)

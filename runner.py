@@ -98,7 +98,7 @@ async def run_site(browser, name, route, run_dir, barrier, sample):
     rec["screenshotAt"] = iso(now())
     q_final = await a.read(page) or q
     await page.screenshot(path=base + "_full.png", full_page=True)
-    x, y, w, h = CROP[name]
+    x, y, w, h = getattr(a, "crop", None) or CROP.get(name, (0, 0, 1400, 1000))
     await page.screenshot(path=base + "_crop.png", clip={"x": x, "y": y, "width": w, "height": h})
     rec["quote"] = q_final
     rec["quote_at_first_visible"] = q
@@ -116,6 +116,7 @@ async def run_site(browser, name, route, run_dir, barrier, sample):
 
 
 async def run_route(browser, route, sites, run_dir, sample, out):
+    sites = [s for s in sites if tuple(route) in [tuple(x) for x in (getattr(ADAPTERS[s], "routes", None) or [tuple(route)])]]
     barrier = Barrier(len(sites))
     recs = await asyncio.gather(*[run_site(browser, s, route, run_dir, barrier, sample) for s in sites])
     by = {r["site"]: r for r in recs}
@@ -138,7 +139,7 @@ async def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--samples", type=int, default=3)
     ap.add_argument("--routes", default=",".join(f"{a}-{b}" for a, b in ROUTES))
-    ap.add_argument("--sites", default="bridg,relay,across,mayan,lifi,debridge")
+    ap.add_argument("--sites", default=",".join(ADAPTERS))
     ap.add_argument("--headed", action="store_true")
     ap.add_argument("--out", default="data/raw_quotes.jsonl")
     args = ap.parse_args()
