@@ -1,4 +1,4 @@
-"""Build the Bridg × OpenSea one-pager (pitch/opensea.html + pitch/Bridg_x_OpenSea.pdf) from the latest campaign.
+"""Build the BRDG × OpenSea one-pager (pitch/opensea.html + pitch/Bridg_x_OpenSea.pdf) from the latest campaign.
 
 Bridg side = Bridg's best *fully-priced* row: excludes compare-only rows and venues whose Bridg price is a flat
 estimate or leaves a fee outside the quote (Allbridge relayer fee in ETH/SOL, Meson/Husher flat formulas,
@@ -86,7 +86,7 @@ def receipts_html(routes=None):
   <figcaption><b>{arrow(r)}</b><span>read {x["b_read"][11:23]} UTC · Δ {x["gap_s"] * 1000:.0f} ms</span></figcaption>
   <div class="pair">
     <div><img src="img/opensea_{key}.png" alt="OpenSea quote {arrow(r)}"><span class="lab">OpenSea <b>{fmt(x["os"], 4)}</b></span></div>
-    <div><img src="img/bridg_{key}.png" alt="Bridg quote {arrow(r)}"><span class="lab">Bridg <b>{fmt(x["bridg"], 6)}</b> · {esc(x["via"])} row</span></div>
+    <div><img src="img/bridg_{key}.png" alt="BRDG quote {arrow(r)}"><span class="lab">BRDG <b>{fmt(x["bridg"], 6)}</b> · {esc(x["via"])} row</span></div>
   </div>
 </figure>''')
     return "\n".join(out)
@@ -94,7 +94,7 @@ def receipts_html(routes=None):
 
 page = f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bridg for OpenSea</title>
+<title>BRDG for OpenSea</title>
 <style>
 @page {{ size: Letter; margin: 0; }}
 :root {{ --ink:#0b0b0b; --ink2:#4b4a46; --muted:#8a8984; --line:#e4e3dd; --soft:#f5f5f1; --lime:#c6f24e; --lime-d:#3f5a00; --blue:#1c5cab; }}
@@ -147,24 +147,24 @@ h2 span {{ text-transform:none; letter-spacing:0; color:var(--muted); font-weigh
 @media screen and (max-width:700px) {{ .page {{ width:auto; height:auto; padding:16px; }} .bottom {{ grid-template-columns:1fr; }} .rcs.two {{ grid-template-columns:1fr; }} .hero,.why {{ grid-template-columns:1fr; }} .rcs {{ grid-template-columns:1fr 1fr; }} table {{ font-size:12px; }} }}
 </style></head><body><main class="page">
 <div>
-  <div class="top"><div class="brand">BRIDG <i>for OpenSea</i></div><div class="for">Prepared for OpenSea · {first[:10]}</div></div>
+  <div class="top"><div class="brand">BRDG <i>for OpenSea</i></div><div class="for">Prepared for OpenSea · {first[:10]}</div></div>
   <h1>Land more USDC on every cross-chain swap.</h1>
-  <p class="lede">Bridg prices each transfer across 16+ bridges live and routes users to the one that lands the most.
-    We quoted the same 100 USDC on OpenSea's swap and on Bridg at the same instant. Bridg paid more on every route the
-    two share, and it also opens BNB Chain routes OpenSea doesn't offer today.</p>
+  <p class="lede">BRDG is a non-custodial bridge aggregator: one API call prices a transfer across up to 36 venues on 73
+    chains and returns the route that lands the most. Quoting the same 100 USDC at the same instant, BRDG paid more than
+    OpenSea's swap on every shared route, and it adds BNB Chain routes OpenSea doesn't offer.</p>
 </div>
 
 <div class="hero">
   <div class="stat key"><div class="v">+{head["bps"]:.0f} <small>bps</small></div><div class="l">more USDC landed on {arrow(head["route"])}
     ({head["lo"]:.0f}–{head["hi"]:.0f} bps across samples): ${head["bps"] * 100:,.0f} per $1M bridged</div></div>
-  <div class="stat"><div class="v">{sum(1 for s in shared if s["bps"] >= 0)}/{len(shared)}</div><div class="l">shared routes where Bridg matched or beat OpenSea's quote</div></div>
-  <div class="stat"><div class="v">+{len(stats) - len(shared)}</div><div class="l">BNB Chain routes (SOL ↔ BSC) Bridg can add to your swap</div></div>
+  <div class="stat"><div class="v">{sum(1 for s in shared if s["bps"] >= 0)}/{len(shared)}</div><div class="l">shared routes where BRDG matched or beat OpenSea's quote</div></div>
+  <div class="stat"><div class="v">+{len(stats) - len(shared)}</div><div class="l">BNB Chain routes (SOL ↔ BSC) BRDG can add to your swap</div></div>
 </div>
 
 <section>
   <h2>100 USDC → USDC, same instant, public UIs <span>average of {min(s["n"] for s in stats)} synchronized samples per route</span></h2>
   <table>
-    <thead><tr><th>Route</th><th class="n">OpenSea receives</th><th class="n">Bridg receives</th><th class="n">Bridg advantage</th><th class="n">Per $1M bridged</th></tr></thead>
+    <thead><tr><th>Route</th><th class="n">OpenSea receives</th><th class="n">BRDG receives</th><th class="n">BRDG advantage</th><th class="n">Per $1M bridged</th></tr></thead>
     <tbody>
 {rows_html()}
     </tbody>
@@ -173,27 +173,28 @@ h2 span {{ text-transform:none; letter-spacing:0; color:var(--muted); font-weigh
 
 <div class="bottom">
   <section class="proof">
-    <h2>Proof <span>{arrow(head["route"])}, read {per[head["route"]][0]["b_read"][11:19]} UTC; OpenSea left, Bridg right</span></h2>
+    <h2>Proof <span>{arrow(head["route"])}, read {per[head["route"]][0]["b_read"][11:19]} UTC; OpenSea left, BRDG right</span></h2>
     <div class="rcs one">
 {receipts_html([head["route"]])}
     </div>
   </section>
   <div class="why">
-    <div><b>Better fills for your users</b>Every quote is priced across all venues at request time, so users land the
-      best available amount rather than one provider's price.</div>
-    <div><b>One integration, more routes</b>Quote, build and submit through one API with no API key. Keys stay with the
-      user, and BNB Chain and dozens of other chains come included.</div>
-    <div><b>Keep part of the upside</b>Bridg's referral fields let an integrator take up to 15 bps on the transfers they
-      route, set per quote and with no sign-up.</div>
+    <div><b>Best route, after every fee</b>Ranked on the net amount that lands, after venue and platform fees. Only routes
+      the user can actually sign can win.</div>
+    <div><b>Drop-in, non-custodial</b>Quote, build, sign, submit: no API key, no account, TypeScript SDK. Users sign in their
+      own wallets. BRDG never holds funds or keys.</div>
+    <div><b>Pays only when it saves, and pays you</b>No BRDG fee unless the route beats the next-best quotes by more than
+      10 bps (then 5–15 bps, capped at $10, already in the quote). OpenSea can add its own 0–15 bps referral share, paid to
+      its wallet in the same signature.</div>
   </div>
-</div>
+</div></div></div>
 
 <div class="foot">
   <b>Method.</b> 100 USDC → USDC on each site's public page, fresh browser, no wallet. All sites typed at once and read at once
-  (OpenSea vs Bridg within {worst_gap_ms:.0f} ms); {min(s["n"] for s in stats)} samples per route, {first[:10]} {first[11:16]}–{last[11:16]} UTC.
-  <b>Bridg</b>: net of its platform fee, best fully-priced route (excludes Allbridge, Meson, Husher, Rhino, Eco, whose quotes
-  omit a fee charged on top or can't be verified). Source-chain gas not counted on either side. OpenSea showed a 0% OpenSea
-  fee. The SOL → ETH gap reflects Relay's 1% fee and elevated Ethereum gas that day. Receipts and raw data: github.com/CainBeaudoin/bb
+  (OpenSea vs BRDG within {worst_gap_ms:.0f} ms); {min(s["n"] for s in stats)} samples per route, {first[:10]} {first[11:16]}–{last[11:16]} UTC.
+  <b>BRDG</b>: net of its platform fee, best fully-priced route (excludes Allbridge, Meson, Husher, Rhino, Eco, whose quotes
+  omit a fee charged on top or can't be verified). Source-chain gas not counted on either side. OpenSea showed a 0% OpenSea fee.
+  The SOL → ETH gap reflects Relay's 1% fee and elevated Ethereum gas that day. Docs: docs.brdg.now · Receipts and data: github.com/CainBeaudoin/bb
 </div>
 </main></body></html>'''
 
