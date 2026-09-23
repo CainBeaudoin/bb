@@ -1,6 +1,6 @@
-"""Build the BRDG × OpenSea one-pager (pitch/opensea.html + pitch/Bridg_x_OpenSea.pdf) from the latest campaign.
+"""Build the BRDG × OpenSea one-pager (pitch/opensea.html + pitch/BRDG_x_OpenSea.pdf) from the latest campaign.
 
-Bridg side = Bridg's best *fully-priced* row: excludes compare-only rows and venues whose Bridg price is a flat
+BRDG side = BRDG's best *fully-priced* row: excludes compare-only rows and venues whose BRDG price is a flat
 estimate or leaves a fee outside the quote (Allbridge relayer fee in ETH/SOL, Meson/Husher flat formulas,
 Rhino/Eco with no public UI to verify). Run from the repo root: .venv/bin/python pitch/build_pitch.py
 """
@@ -213,7 +213,7 @@ async def pdf():
         p = await b.new_page()
         await p.goto("file://" + os.path.abspath("pitch/opensea.html"))
         await p.wait_for_timeout(500)
-        await p.pdf(path="pitch/Bridg_x_OpenSea.pdf", format="Letter", print_background=True,
+        await p.pdf(path="pitch/BRDG_x_OpenSea.pdf", format="Letter", print_background=True,
                     margin={"top": "0", "bottom": "0", "left": "0", "right": "0"})
         await p.set_viewport_size({"width": 816, "height": 1056})
         h = await p.evaluate("document.querySelector('.foot').getBoundingClientRect().bottom")
@@ -224,4 +224,4 @@ async def pdf():
         await b.close()
 
 asyncio.run(pdf())
-print("wrote pitch/Bridg_x_OpenSea.pdf, pitch/preview.png")
+print("wrote pitch/BRDG_x_OpenSea.pdf, pitch/preview.png")

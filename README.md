@@ -1,4 +1,4 @@
-# Bridg competitive benchmark — Bridg vs direct-venue UI cross-reference
+# BRDG competitive benchmark — BRDG vs direct-venue UI cross-reference
 
 Clean Playwright Chromium (fresh context per site, no wallet, never signs). 100 USDC → USDC.
 
@@ -42,7 +42,7 @@ Each run uses two barriers across all sites (fresh browser context each):
    instant (`valueReadAt`), then screenshot (`screenshotAt`). `quoteVisible` / `settledAt` are kept for reference.
 
 Every record carries `campaign`, and each run records `run_sync` (typed / value-read / screenshot spreads). Sites whose
-value was read >2 s from Bridg's are flagged, the route is retried, and flagged records are excluded. The dashboard and
+value was read >2 s from BRDG's are flagged, the route is retried, and flagged records are excluded. The dashboard and
 workbook use the latest campaign only (`compare.load_runs(raw, campaign="latest")`); older sessions stay in the raw file.
 
 ## Repository map
@@ -50,16 +50,16 @@ workbook use the latest campaign only (`compare.load_runs(raw, campaign="latest"
 | Path | What it is |
 |---|---|
 | `docs/PLATFORMS.md` | How every venue/platform was reached, click paths for the signed-in platform checks (Axiom, GMGN, Pump.fun, FOMO), OpenSea, URL patterns, API diagnostics |
-| `sites.py` | Route/chain/USDC config + adapters for Bridg, Relay, deBridge, LI.FI (Jumper), Across, Mayan; loads `adapters/` |
+| `sites.py` | Route/chain/USDC config + adapters for BRDG, Relay, deBridge, LI.FI (Jumper), Across, Mayan; loads `adapters/` |
 | `adapters/*.py` | One adapter per additional venue/platform; blocked ones hold a `BLOCKED` dict (reason, URL, check time) |
 | `runner.py` | Synchronized runs (typed barrier + value-read barrier), screenshots + SHA-256 → `data/raw_quotes.jsonl`, `evidence/` |
-| `compare.py` | Bridg-vs-venue gaps and Bridg-vs-direct savings (latest campaign, flagged records dropped) |
+| `compare.py` | BRDG-vs-venue gaps and BRDG-vs-direct savings (latest campaign, flagged records dropped) |
 | `build_dashboard.py` | `dashboard/data.json` + findings text for `index.html` |
 | `build_xlsx.py` | `Bridg_Competitive_Benchmark.xlsx` |
 | `index.html` | Static dashboard (Vercel) |
 | `data/raw_quotes.jsonl` | Append-only raw records (all sessions) |
 | `data/normalized.csv` | Per-sample comparison rows (latest campaign) |
-| `data/api/` | Bridg API indicative quotes used to explain gaps |
+| `data/api/` | BRDG API indicative quotes used to explain gaps |
 | `evidence/<UTC>/` | Full-page + cropped screenshots and page text per site/route/sample |
 | `tools/login.py` | Opens an isolated headed browser for the owner to sign in themselves (session kept in ignored `profiles/`) |
 | `tools/dbg.py`, `tools/probe.py`, `tools/dom*.py` | Adapter debugging helpers |
@@ -68,8 +68,8 @@ No credentials, account emails, wallet/deposit addresses or session data are sto
 
 ## Pitch one-pager (OpenSea)
 
-    .venv/bin/python pitch/build_pitch.py   # → pitch/opensea.html, pitch/Bridg_x_OpenSea.pdf
+    .venv/bin/python pitch/build_pitch.py   # → pitch/opensea.html, pitch/BRDG_x_OpenSea.pdf
 
 Exactly one Letter page (the build fails if the footer would overflow): route table, headline receipt, value props. It is also
-the dashboard's **One-pager** tab (`#onepager`). Numbers come from the latest campaign. Bridg's side uses its best *fully-priced* row: it leaves out Allbridge
+the dashboard's **One-pager** tab (`#onepager`). Numbers come from the latest campaign. BRDG's side uses its best *fully-priced* row: it leaves out Allbridge
 (relayer fee paid on top in ETH/SOL), Meson and Husher (flat formulas) and Rhino/Eco (no public UI to verify).

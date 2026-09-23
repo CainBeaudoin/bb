@@ -5,7 +5,7 @@ from compare import load_runs, build_rows, summarize, write_csv, build_competito
 from sites import ADAPTERS, BLOCKED
 
 RAW = "data/raw_quotes.jsonl"
-SITE_LABEL = {"bridg": "Bridg", "relay": "Relay", "across": "Across", "mayan": "Mayan",
+SITE_LABEL = {"bridg": "BRDG", "relay": "Relay", "across": "Across", "mayan": "Mayan",
               "lifi": "LI.FI (Jumper)", "debridge": "deBridge", "layerswap": "Layerswap", "rhino": "Rhino.fi",
               "husher": "Husher", "simpleswap": "SimpleSwap", "meson": "Meson", "symbiosis": "Symbiosis",
               "near-intents": "NEAR Intents", "skip-go": "Skip Go", "eco": "Eco",
@@ -27,14 +27,14 @@ summary = summarize(rows)
 crows = build_competitor_rows(runs)
 csum = summarize_competitors(crows)
 
-# per route: Bridg's best vs the best any other site showed directly (averaged per site across samples)
+# per route: BRDG's best vs the best any other site showed directly (averaged per site across samples)
 winners = []
 for route in ["SOL->ETH", "ETH->SOL", "SOL->BSC", "BSC->SOL", "SOL->Base", "Base->SOL"]:
     cs = [c for c in csum if c["route"] == route]
     if not cs:
         continue
     top = max(cs, key=lambda c: c["other_avg"])
-    # Bridg best averaged once per synchronized run (not weighted by how many sites quoted in that run)
+    # BRDG best averaged once per synchronized run (not weighted by how many sites quoted in that run)
     bb = [r["quote"]["best_out"] for recs in runs.values() for r in recs
           if r["site"] == "bridg" and r["route"] == route and r.get("status") == "OK" and r["quote"].get("best_out")]
     best = sum(bb) / len(bb)
@@ -83,31 +83,31 @@ for run_id, recs in runs.items():
 
 issues = [
     {"severity": "warning", "title": "Relay ~20 bps below relay.link into Solana — explained: new USDC account cost",
-     "detail": "ETH→SOL, BSC→SOL, Base→SOL: −19.9 to −20.0 bps in every sample after adding back Bridg's 5 bps. Verified "
-               "via Bridg's API (indicative quotes, 14:45:35 UTC, saved in data/api/): for a recipient that already holds USDC, Bridg prices Relay "
+     "detail": "ETH→SOL, BSC→SOL, Base→SOL: −19.9 to −20.0 bps in every sample after adding back BRDG's 5 bps. Verified "
+               "via BRDG's API (indicative quotes, 14:45:35 UTC, saved in data/api/): for a recipient that already holds USDC, BRDG prices Relay "
                "at 99.945676 — identical to relay.link. For a fresh Solana address, Relay's 'destination fill gas' rises from "
-               "0.004 to 0.205 USDC (+20.1 bps): the cost of creating the recipient's USDC token account. Bridg's no-wallet "
+               "0.004 to 0.205 USDC (+20.1 bps): the cost of creating the recipient's USDC token account. BRDG's no-wallet "
                "page prices that case; relay.link's no-wallet page assumes the account exists. Mayan and NEAR Intents shift "
                "the same way. SOL→ETH was −25 bps this campaign (Ethereum gas elevated)."},
     {"severity": "serious", "title": "LI.FI and SimpleSwap rows are far below their own sites",
-     "detail": "LI.FI: 15–96 bps below jumper.exchange's Best Return on every route. Bridg's API shows a 'LIFI Fixed Fee' "
+     "detail": "LI.FI: 15–96 bps below jumper.exchange's Best Return on every route. BRDG's API shows a 'LIFI Fixed Fee' "
                "of 0.25 USDC (25 bps) on its LI.FI row that Jumper doesn't charge, plus the ~0.20 new-account cost into "
                "Solana — together ~45 bps; the rest is unexplained (likely a different route). SimpleSwap: 48–272 bps below "
-               "simpleswap.io's default floating 'Best rate'; Bridg's API lists no fee breakdown for it."},
+               "simpleswap.io's default floating 'Best rate'; BRDG's API lists no fee breakdown for it."},
     {"severity": "serious", "title": "Meson and Husher rows are flat fee formulas, not live quotes (confirmed)",
-     "detail": "Bridg's API fee breakdown: Meson = a fixed 'Meson LP fee' of 0.50 USDC; Husher = fixed 0.20 exchange fee + "
-               "0.30 delivery fee; Allbridge = fixed 0.10 CCTP service fee. So Bridg shows exactly 99.5/99.9 minus its own fee "
+     "detail": "BRDG's API fee breakdown: Meson = a fixed 'Meson LP fee' of 0.50 USDC; Husher = fixed 0.20 exchange fee + "
+               "0.30 delivery fee; Allbridge = fixed 0.10 CCTP service fee. So BRDG shows exactly 99.5/99.9 minus its own fee "
                "(99.45025 / 99.85005; 99.75015 on SOL→ETH at the 15 bps tier). When Ethereum gas rose, Meson's own site dropped "
-               "to 98.56 on SOL→ETH while Bridg still showed 99.75 (+134 bps). Husher's own site charges 0.35% (not 0.20), so "
-               "it's 15–25 bps lower than Bridg's row. Allbridge matches because its site also shows a flat 99.90."},
-    {"severity": "serious", "title": "Bridg lists venues whose own site can't quote these routes",
-     "detail": "Rhino.fi (Bridg's best price on SOL→BSC) — retail app shut down Aug 2026. Eco — its portal has no "
-               "Solana or BNB Chain, yet Bridg lists Eco on SOL↔ETH/Base. NEAR Intents — public app moved behind a login."},
-    {"severity": "serious", "title": "Across missing from Bridg on 4 of 6 routes",
+               "to 98.56 on SOL→ETH while BRDG still showed 99.75 (+134 bps). Husher's own site charges 0.35% (not 0.20), so "
+               "it's 15–25 bps lower than BRDG's row. Allbridge matches because its site also shows a flat 99.90."},
+    {"severity": "serious", "title": "BRDG lists venues whose own site can't quote these routes",
+     "detail": "Rhino.fi (BRDG's best price on SOL→BSC) — retail app shut down Aug 2026. Eco — its portal has no "
+               "Solana or BNB Chain, yet BRDG lists Eco on SOL↔ETH/Base. NEAR Intents — public app moved behind a login."},
+    {"severity": "serious", "title": "Across missing from BRDG on 4 of 6 routes",
      "detail": "Not listed on ETH→SOL, BSC→SOL, Base→SOL or SOL→BSC although across.to quotes 99.98–99.99. Where "
-               "listed (SOL→ETH, SOL→Base) it matches exactly net of Bridg's fee and is Bridg's best price."},
-    {"severity": "info", "title": "Competitor platforms: Bridg beats OpenSea; the rest can't be quoted",
-     "detail": "OpenSea swap (Relay; LI.FI on SOL→Base; 0% OpenSea fee promo) pays 89 bps less than Bridg's best on "
+               "listed (SOL→ETH, SOL→Base) it matches exactly net of BRDG's fee and is BRDG's best price."},
+    {"severity": "info", "title": "Competitor platforms: BRDG beats OpenSea; the rest can't be quoted",
+     "detail": "OpenSea swap (Relay; LI.FI on SOL→Base; 0% OpenSea fee promo) pays 89 bps less than BRDG's best on "
                "SOL→ETH, ~10 bps less on ETH→SOL and Base→SOL, ~1 bp less on SOL→Base; no BNB Chain. Signed in (by the "
                "user) and re-checked: Axiom has a cross-chain Convert, but the amount is capped at the wallet balance, so "
                "100 USDC can't be priced unfunded (deposit fees shown only at its $2–3 minimum). GMGN's Convert needs 2FA "
@@ -115,18 +115,18 @@ issues = [
                "deposits from 7 chains into one USD balance with no quote."},
     {"severity": "warning", "title": "Layerswap 3–13.5 bps below layerswap.io",
      "detail": "Identical across samples: −13.4/−13.5 bps on Solana-source routes, −3.2 to −7.9 bps into Solana."},
-    {"severity": "warning", "title": "CCTP gap is Portal hiding a fee, not a Bridg error",
+    {"severity": "warning", "title": "CCTP gap is Portal hiding a fee, not a BRDG error",
      "detail": "Circle's own bridge has no Solana, so CCTP is read from Portal (Wormhole), which hides its relayer fee until "
-               "a wallet connects. Bridg's API itemises it: 'Circle Forwarding Service fee and destination gas' = 0.16 USDC "
+               "a wallet connects. BRDG's API itemises it: 'Circle Forwarding Service fee and destination gas' = 0.16 USDC "
                "on ETH→SOL, which is the −14 to −15 bps gap into Solana. On SOL→ETH (−332 bps this campaign) the same line "
                "carries Ethereum destination gas, which was elevated."},
-    {"severity": "warning", "title": "Bridg's fee isn't applied to every venue; deBridge's fixed fee jumps around",
-     "detail": "deBridge, Symbiosis and Mayan (ETH→SOL) match their own sites before adding back Bridg's 5 bps — Bridg "
+    {"severity": "warning", "title": "BRDG's fee isn't applied to every venue; deBridge's fixed fee jumps around",
+     "detail": "deBridge, Symbiosis and Mayan (ETH→SOL) match their own sites before adding back BRDG's 5 bps — BRDG "
                "appears not to take its fee on those rows. deBridge's own site adds a fixed fee on top of the input that "
                "changed a lot between loads (it's compared as out − fee), so some deBridge gaps swing widely."},
     {"severity": "info", "title": "Matches",
      "detail": "Across where listed (0.0), Allbridge Core (0.0), Skip Go (+1.2 to +1.6; volatile on SOL→ETH), Mayan on "
-               "most routes, and Relay on SOL→BSC/SOL→Base match their own sites net of Bridg's fee."},
+               "most routes, and Relay on SOL→BSC/SOL→Base match their own sites net of BRDG's fee."},
     {"severity": "info", "title": "Timing: one campaign, values read within 10 ms",
      "detail": "Everything on this page comes from one campaign (14:18:34–14:30:59 UTC). In each run all sites got '100' "
                "typed at the same instant and read the compared value at the same instant (second barrier): worst spread "

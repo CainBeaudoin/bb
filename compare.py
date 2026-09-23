@@ -1,7 +1,7 @@
-"""Normalize raw JSONL into Bridg-vs-direct rows and a per-route/venue summary.
+"""Normalize raw JSONL into BRDG-vs-direct rows and a per-route/venue summary.
 
-gap_bps = (Bridg's listed quote for venue − venue's own UI quote) / 100 × 10,000.
-Positive = Bridg's listing shows more than the venue's own site.
+gap_bps = (BRDG's listed quote for venue − venue's own UI quote) / 100 × 10,000.
+Positive = BRDG's listing shows more than the venue's own site.
 """
 import csv, json, statistics, sys
 from collections import defaultdict
@@ -11,7 +11,7 @@ VENUE_IDS = {n: a.bridg_id for n, a in ADAPTERS.items() if getattr(a, "bridg_id"
 
 def load_runs(raw, campaign="latest"):
     """Group records by synchronized run. By default only the latest campaign is used (all quotes collected
-    in one window), and site records whose compared value was read >2 s from Bridg's (gap_flag) are dropped —
+    in one window), and site records whose compared value was read >2 s from BRDG's (gap_flag) are dropped —
     their route was re-run and the retry is kept."""
     recs = [json.loads(line) for line in open(raw)]
     if campaign == "latest":
@@ -39,7 +39,7 @@ def build_rows(runs):
       bridg_fees = {}
       for d in (bq, b.get("fastest_detail") or {}):
           if d.get("detail_route"):
-              fee = dict(d.get("detail_fees") or []).get("Bridg fee", 0.0)
+              fee = dict(d.get("detail_fees") or []).get("Bridg fee", 0.0)  # label as scraped from the page
               bridg_fees[d["detail_route"].lower().replace(" ", "")] = fee
       for site, vid in VENUE_IDS.items():
           v = by.get(site)
@@ -103,16 +103,16 @@ def write_csv(rows, path="data/normalized.csv"):
 
 def verdict(venue, gaps, listed_n, n, raw=None):
     if listed_n == 0:
-        return "NOT LISTED on Bridg"
+        return "NOT LISTED on BRDG"
     if not gaps:
         return "No direct quote"
     m = statistics.mean(gaps)
     tol = 4 if venue == "mayan" else 2  # Mayan: Dutch-auction drift + 2-4 dp display rounding
     if abs(m) <= tol:
-        return "Match (net of Bridg fee)"
+        return "Match (net of BRDG fee)"
     if raw and abs(statistics.mean(raw)) <= tol:
-        return "Match (Bridg fee not applied)"
-    return "Bridg LOWER than venue" if m < 0 else "Bridg HIGHER than venue"
+        return "Match (BRDG fee not applied)"
+    return "BRDG LOWER than venue" if m < 0 else "BRDG HIGHER than venue"
 
 
 def summarize(rows):
@@ -149,8 +149,8 @@ if __name__ == "__main__":
 
 
 def build_competitor_rows(runs):
-    """Bridg's best executable output vs what each other site (venue or platform) shows directly.
-    savings_bps = (Bridg best − other) / 100 × 10,000; positive = user gets more on Bridg."""
+    """BRDG's best executable output vs what each other site (venue or platform) shows directly.
+    savings_bps = (BRDG best − other) / 100 × 10,000; positive = user gets more on BRDG."""
     out = []
     for run_id, recs in runs.items():
         by = {r["site"]: r for r in recs}

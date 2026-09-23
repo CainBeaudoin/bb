@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bridg Benchmark</title>
-<meta name="description" content="Bridg's per-venue quotes cross-checked against each bridge venue's own web UI — 100 USDC on six routes, with screenshot receipts.">
+<title>BRDG Benchmark</title>
+<meta name="description" content="BRDG's per-venue quotes cross-checked against each bridge venue's own web UI — 100 USDC on six routes, with screenshot receipts.">
 <style>
 :root {
   color-scheme: light;
@@ -172,8 +172,8 @@ a { color: var(--s1); }
   <div id="tab-data" role="tabpanel" aria-labelledby="tabbtn-data">
   <header>
     <div>
-      <h1>Bridg Benchmark</h1>
-      <p class="sub">Is Bridg's price for each venue the same price that venue shows on its own site? Every quote below is
+      <h1>BRDG Benchmark</h1>
+      <p class="sub">Is BRDG's price for each venue the same price that venue shows on its own site? Every quote below is
         for 100 USDC → USDC, read from each site's own web page in a fresh browser with no wallet connected.</p>
       <div class="meta" id="meta"></div>
     </div>
@@ -189,9 +189,9 @@ a { color: var(--s1); }
   </section>
 
   <section>
-    <div class="sec-head"><h2>Does a user get more on Bridg or by going direct?</h2>
-      <p>Bridg's best price, meaning what you'd actually receive on Bridg, compared with what each venue or platform
-        shows on its own site for the same 100 USDC at the same moment. Blue means Bridg pays more. Red means going
+    <div class="sec-head"><h2>Does a user get more on BRDG or by going direct?</h2>
+      <p>BRDG's best price, meaning what you'd actually receive on BRDG, compared with what each venue or platform
+        shows on its own site for the same 100 USDC at the same moment. Blue means BRDG pays more. Red means going
         direct pays more. Gas paid separately on the source chain isn't counted on either side.</p></div>
     <div class="card tbl-scroll" style="margin-bottom:12px"><table class="data" id="winners"></table></div>
     <div class="card">
@@ -202,12 +202,12 @@ a { color: var(--s1); }
 
   <section>
     <div class="sec-head row">
-      <div><h2>Is Bridg's price for each venue accurate?</h2>
+      <div><h2>Is BRDG's price for each venue accurate?</h2>
         <p id="hm-desc"></p></div>
       <div class="spacer"></div>
       <div class="toggle" role="group" aria-label="Basis">
-        <button type="button" data-basis="ex" aria-pressed="true">Excluding Bridg fee</button>
-        <button type="button" data-basis="raw" aria-pressed="false">Including Bridg fee</button>
+        <button type="button" data-basis="ex" aria-pressed="true">Excluding BRDG fee</button>
+        <button type="button" data-basis="raw" aria-pressed="false">Including BRDG fee</button>
       </div>
     </div>
     <div class="card">
@@ -224,13 +224,13 @@ a { color: var(--s1); }
 
   <section>
     <div class="sec-head"><h2 id="route-title"></h2>
-      <p>Averaged over all samples. <span style="color:var(--s1)">●</span> is Bridg's listed quote for the venue.
+      <p>Averaged over all samples. <span style="color:var(--s1)">●</span> is BRDG's listed quote for the venue.
         <span style="color:var(--s2)">●</span> is the venue's own site. For deBridge, the fee its site adds on top of
         the 100 USDC input is subtracted, so both sides are compared the same way.</p></div>
     <div class="two">
       <div class="card">
-        <div class="legend"><span><i style="background:var(--s1)"></i>Bridg's listing</span><span><i style="background:var(--s2)"></i>Venue's own site</span></div>
-        <svg class="dp" id="dp" role="img" aria-label="Dot plot of Bridg vs venue quotes"></svg>
+        <div class="legend"><span><i style="background:var(--s1)"></i>BRDG's listing</span><span><i style="background:var(--s2)"></i>Venue's own site</span></div>
+        <svg class="dp" id="dp" role="img" aria-label="Dot plot of BRDG vs venue quotes"></svg>
       </div>
       <div class="card tbl-scroll">
         <h3>Each sample</h3>
@@ -240,9 +240,9 @@ a { color: var(--s1); }
   </section>
 
   <section>
-    <div class="sec-head"><h2>Every venue Bridg priced</h2>
-      <p>All the quotes Bridg's page showed for this route and sample, in its own order. "Compare only" venues are shown
-        for reference and can't be executed through Bridg.</p></div>
+    <div class="sec-head"><h2>Every venue BRDG priced</h2>
+      <p>All the quotes BRDG's page showed for this route and sample, in its own order. "Compare only" venues are shown
+        for reference and can't be executed through BRDG.</p></div>
     <div class="two">
       <div class="card tbl-scroll"><table class="data" id="board"></table></div>
       <div class="card" id="breakdown"></div>
@@ -273,8 +273,8 @@ a { color: var(--s1); }
         <li>For each route, all six sites load with the route already selected. The runner then types <code>100</code>
           into every page at the same moment. Once every site's quote has settled, all of them read the value that gets
           compared at the same moment (a second barrier). The timing table above shows how close each run was.</li>
-        <li>Gap in bps = (Bridg's listed quote − venue's own quote) ÷ 100 × 10,000. Negative means Bridg shows less.
-          "Excluding Bridg fee" adds Bridg's own platform fee back, so the gap reflects only the venue's price.</li>
+        <li>Gap in bps = (BRDG's listed quote − venue's own quote) ÷ 100 × 10,000. Negative means BRDG shows less.
+          "Excluding BRDG fee" adds BRDG's own platform fee back, so the gap reflects only the venue's price.</li>
         <li>USDC contracts: Solana <code>EPjF…Dt1v</code>, Ethereum <code>0xA0b8…eB48</code>, Base
           <code>0x8335…2913</code>, BSC <code>0x8AC7…580d</code>. BSC's is Binance-Peg USDC, which has 18 decimals and
           is bridged, not native Circle USDC.</li>
@@ -291,7 +291,7 @@ a { color: var(--s1); }
     <div class="op-bar">
       <strong>BRDG × OpenSea</strong><span class="meta" style="margin:0">one Letter page (8.5 × 11 in), built from the same campaign as the Data tab</span>
       <span class="spacer"></span>
-      <a class="btn" href="pitch/Bridg_x_OpenSea.pdf" download>Download PDF</a>
+      <a class="btn" href="pitch/BRDG_x_OpenSea.pdf" download>Download PDF</a>
       <a class="btn" href="pitch/opensea.html" target="_blank" rel="noopener">Open page</a>
     </div>
     <div class="sheet-wrap" id="sheet-wrap"><iframe class="sheet" id="sheet" title="BRDG × OpenSea one-pager" loading="lazy"></iframe></div>
@@ -379,15 +379,15 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
     el("span", { text: `${D.n_runs} synchronized runs` }),
     el("span", { text: `${D.n_records} quote records` }));
   const pairs = D.summary, matched = pairs.filter(p => p.verdict.startsWith("Match")).length;
-  const lower = pairs.filter(p => p.verdict.startsWith("Bridg LOWER")), notListed = pairs.filter(p => p.verdict.startsWith("NOT")).length;
+  const lower = pairs.filter(p => p.verdict.startsWith("BRDG LOWER")), notListed = pairs.filter(p => p.verdict.startsWith("NOT")).length;
   const worst = Math.min(...pairs.filter(p => p.gap_ex_fee_bps != null).map(p => p.gap_ex_fee_bps));
   const rw = D.route_winners || [];
   const tiles = [
-    ["Bridg best overall", rw.filter(w => w.savings_bps >= -2).length + " / " + rw.length, "routes where no venue or platform's own site paid more than Bridg's best price"],
-    ["Match", matched + " / " + pairs.length, "route × venue pairs where Bridg's quote matches the venue's site (net of Bridg fee)"],
-    ["Bridg lower", lower.length, "pairs where Bridg's listing pays less than the venue's own site"],
-    ["Not listed", notListed, "pairs where the venue quoted on its own site but was missing from Bridg"],
-    ["Worst gap", sgn(worst) + " bps", "largest shortfall, excluding Bridg's own fee"],
+    ["BRDG best overall", rw.filter(w => w.savings_bps >= -2).length + " / " + rw.length, "routes where no venue or platform's own site paid more than BRDG's best price"],
+    ["Match", matched + " / " + pairs.length, "route × venue pairs where BRDG's quote matches the venue's site (net of BRDG fee)"],
+    ["BRDG lower", lower.length, "pairs where BRDG's listing pays less than the venue's own site"],
+    ["Not listed", notListed, "pairs where the venue quoted on its own site but was missing from BRDG"],
+    ["Worst gap", sgn(worst) + " bps", "largest shortfall, excluding BRDG's own fee"],
     ["Sync (worst run)", ms(D.sync && D.sync.max_value_read_spread_s), "largest gap between the moments sites' compared values were read in one synchronized run (target ≤ 2 s)"],
     ["Venues checked", V.length + " + " + (D.blocked || []).length, "venues cross-checked on their own site + venues blocked (no public quote: needs login, wallet or address, or route not offered)"],
   ];
@@ -406,8 +406,8 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
   const inkFor = (tok) => (tok.endsWith("-3") ? "var(--ink-strong)" : "var(--ink)");
   function drawHM() {
     $("hm-desc").textContent = basis === "ex"
-      ? "Average gap in bps with Bridg's own fee added back, so it shows whether Bridg reports the venue's price correctly. Red means Bridg shows less than the venue's site."
-      : "Average gap in bps as a user sees it, including Bridg's platform fee (usually 5 bps). Red means Bridg shows less than the venue's site.";
+      ? "Average gap in bps with BRDG's own fee added back, so it shows whether BRDG reports the venue's price correctly. Red means BRDG shows less than the venue's site."
+      : "Average gap in bps as a user sees it, including BRDG's platform fee (usually 5 bps). Red means BRDG shows less than the venue's site.";
     const t = $("hm"); t.replaceChildren();
     t.append(el("thead", {}, el("tr", {}, el("th", { text: "" }), ...D.routes.map(r => el("th", { scope: "col", text: arrow(r) })))));
     const tb = el("tbody");
@@ -452,7 +452,7 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
           const out = [];
           if (g != null) out.push(el("div", { class: "tv", text: sgn(g) + " bps" }));
           out.push(el("div", { class: "tl", text: `${S[v]} · ${arrow(r)}` }));
-          out.push(el("div", { class: "kr" }, el("b", { style: "background:var(--s1)" }), el("span", { text: "Bridg " + fmt(s.bridg_avg) })));
+          out.push(el("div", { class: "kr" }, el("b", { style: "background:var(--s1)" }), el("span", { text: "BRDG " + fmt(s.bridg_avg) })));
           out.push(el("div", { class: "kr" }, el("b", { style: "background:var(--s2)" }), el("span", { text: "Venue " + fmt(s.direct_avg) })));
           out.push(el("div", { class: "tl", text: (s.gap_min != null ? `range ${sgn(s.gap_min)} to ${sgn(s.gap_max)} (ex-fee) · ` : "") + s.verdict }));
           return out;
@@ -463,12 +463,12 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
       tb.append(tr);
     }
     t.append(tb);
-    const sc = $("scale"); sc.replaceChildren(el("span", { class: "lab", text: "Bridg shows less" }));
+    const sc = $("scale"); sc.replaceChildren(el("span", { class: "lab", text: "BRDG shows less" }));
     const labels = ["≤ −30", "−30…−10", "−10…−2", "±2", "2…10", "10…30", "≥ 30"];
     bins.forEach((b, i) => sc.append(el("i", { title: labels[i] + " bps", style: `background:var(--${b[2]})` })));
-    sc.append(el("span", { class: "lab", text: "Bridg shows more" }),
+    sc.append(el("span", { class: "lab", text: "BRDG shows more" }),
       el("i", { style: "background:repeating-linear-gradient(45deg,var(--hatch) 0 2px,transparent 2px 7px),var(--surface-2)" }),
-      el("span", { class: "lab", text: "Not listed on Bridg" }));
+      el("span", { class: "lab", text: "Not listed on BRDG" }));
   }
   document.querySelectorAll("[data-basis]").forEach(b => b.addEventListener("click", () => {
     basis = b.dataset.basis;
@@ -490,7 +490,7 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
     const vals = rows.flatMap(s => [s.bridg_avg, s.direct_avg]).filter(x => x != null);
     let lo = Math.min(...vals), hi = Math.max(...vals);
     const pad = Math.max(0.05, (hi - lo) * 0.08); lo -= pad; hi += pad;
-    const W = svg.clientWidth || 600, L = 120, R = 20, T = 8, rowH = 44, H = T + rows.length * rowH + 28;
+    const W = Math.max(svg.clientWidth || 600, 360), L = 120, R = 20, T = 8, rowH = 44, H = T + rows.length * rowH + 28;
     svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("height", H);
     const x = v => L + (v - lo) / (hi - lo) * (W - L - R);
     const step = (hi - lo) > 1 ? 0.25 : (hi - lo) > 0.4 ? 0.1 : 0.05;
@@ -509,11 +509,11 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
         g.append(mk("line", { class: "conn", x1: x(s.bridg_avg), x2: x(s.direct_avg), y1: cy, y2: cy }));
       if (s.direct_avg != null) g.append(mk("circle", { cx: x(s.direct_avg), cy, r: 6, fill: "var(--s2)", stroke: "var(--surface)", "stroke-width": 2 }));
       if (s.bridg_avg != null) g.append(mk("circle", { cx: x(s.bridg_avg), cy, r: 6, fill: "var(--s1)", stroke: "var(--surface)", "stroke-width": 2 }));
-      else { const t = mk("text", { x: x(s.direct_avg) - 10, y: cy + 4, "text-anchor": "end" }); t.textContent = "not on Bridg"; g.append(t); }
+      else { const t = mk("text", { x: x(s.direct_avg) - 10, y: cy + 4, "text-anchor": "end" }); t.textContent = "not on BRDG"; g.append(t); }
       const nodes = () => [
         el("div", { class: "tv", text: s.gap_ex_fee_bps != null ? sgn(s.gap_ex_fee_bps) + " bps ex-fee" : s.verdict }),
         el("div", { class: "tl", text: S[s.venue] }),
-        el("div", { class: "kr" }, el("b", { style: "background:var(--s1)" }), el("span", { text: "Bridg " + fmt(s.bridg_avg) })),
+        el("div", { class: "kr" }, el("b", { style: "background:var(--s1)" }), el("span", { text: "BRDG " + fmt(s.bridg_avg) })),
         el("div", { class: "kr" }, el("b", { style: "background:var(--s2)" }), el("span", { text: "Venue " + fmt(s.direct_avg) }))];
       g.addEventListener("pointermove", e => showTip(e, nodes()));
       g.addEventListener("pointerleave", hideTip);
@@ -526,11 +526,11 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
   function drawRoute() {
     const route = $("route").value, sample = +$("sample").value;
     const rt = (D.sync_runs || []).filter(x => x.route === route).map(x => `s${x.sample} ${time(x.valueReadAt).slice(0, 8)}`);
-    $("route-title").textContent = arrow(route) + " — Bridg vs each venue" + (rt.length ? `  ·  read at ${rt.join(", ")} UTC` : "");
+    $("route-title").textContent = arrow(route) + " — BRDG vs each venue" + (rt.length ? `  ·  read at ${rt.join(", ")} UTC` : "");
     drawDot(route);
     // samples table
     const st = $("samples"); st.replaceChildren();
-    st.append(el("thead", {}, el("tr", {}, ...["Venue", "S", "Read at (UTC)", "Bridg", "Venue", "Gap", "Ex-fee", "Δ read"].map((h, i) => el("th", { class: i > 2 ? "num" : "", text: h })))));
+    st.append(el("thead", {}, el("tr", {}, ...["Venue", "S", "Read at (UTC)", "BRDG", "Venue", "Gap", "Ex-fee", "Δ read"].map((h, i) => el("th", { class: i > 2 ? "num" : "", text: h })))));
     const tb = el("tbody");
     D.samples.filter(r => r.route === route).sort((a, b) => V.indexOf(a.venue) - V.indexOf(b.venue) || a.sample - b.sample).forEach(r => {
       const g = r.gap_ex_bridg_fee_bps;
@@ -552,8 +552,8 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
       el("td", { class: "num", text: fmt(v.out) }), el("td", { text: v.delta || "best" }), el("td", { text: v.eta || "" }),
       el("td", {}, ...v.tags.map(t => el("span", { class: "pill", text: t }))))));
     bt.append(bb);
-    const bd = $("breakdown"); bd.replaceChildren(el("h3", { text: "Bridg's fee breakdown" }),
-      el("p", { class: "meta", style: "margin-top:0", text: "Bridg only breaks down the route selected under Best price or Fastest, so these are the only two available." }));
+    const bd = $("breakdown"); bd.replaceChildren(el("h3", { text: "BRDG's fee breakdown" }),
+      el("p", { class: "meta", style: "margin-top:0", text: "BRDG only breaks down the route selected under Best price or Fastest, so these are the only two available." }));
     for (const [k, d] of [["Best price", b.best], ["Fastest", b.fastest]]) {
       if (!d) continue;
       const route_ = d.route || d.detail_route, out = d.out != null ? d.out : d.best_out, fees = d.fees || d.detail_fees || [];
@@ -561,7 +561,7 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
         el("div", { class: "row" }, el("span", { class: "pill", text: k }), el("strong", { text: route_ || "—" }), el("span", { class: "spacer" }), el("strong", { class: "num", text: fmt(out) + " USDC" })),
         ...fees.map(([n, a]) => el("div", { class: "row", style: "font-size:13px;color:var(--ink-2);margin-top:3px" }, el("span", { text: n }), el("span", { class: "spacer" }), el("span", { text: "−" + fmt(a) })))));
     }
-    if (b.picked) bd.append(el("p", { class: "meta", text: "Assets picked on Bridg: " + b.picked.map(p => p.replace(/\n/g, " ")).join(" → ") }));
+    if (b.picked) bd.append(el("p", { class: "meta", text: "Assets picked on BRDG: " + b.picked.map(p => p.replace(/\n/g, " ")).join(" → ") }));
     // receipts
     const g = $("gallery"); g.replaceChildren();
     const order = ["bridg", ...V];
@@ -571,7 +571,7 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
       add("typed", time(r.requestStart)); add("1st quote", time(r.quoteVisible));
       if (r.valueReadAt) add("value read", time(r.valueReadAt));
       add("screenshot", time(r.screenshotAt));
-      if (r.gap_s != null) add("Δ vs Bridg", ms(r.gap_s));
+      if (r.gap_s != null) add("Δ vs BRDG", ms(r.gap_s));
       add("sha256", r.crop.sha256.slice(0, 16) + "…", "sha");
       const link = el("a", { class: "img", href: (D.full_base || "") + r.full.path, target: "_blank", rel: "noopener" },
         el("img", { src: r.crop.path, loading: "lazy", alt: `${S[r.site]} quote screenshot, ${arrow(r.route)} sample ${r.sample}` }));
@@ -603,7 +603,7 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
 
   function drawSV() {
     const wt = $("winners"); wt.replaceChildren();
-    wt.append(el("thead", {}, el("tr", {}, ...["Route", "Bridg best (avg)", "Best elsewhere", "Its quote", "Bridg vs best", "Sites Bridg beats", "Sites beating Bridg"].map((h, i) => el("th", { class: i && i !== 2 ? "num" : "", text: h })))));
+    wt.append(el("thead", {}, el("tr", {}, ...["Route", "BRDG best (avg)", "Best elsewhere", "Its quote", "BRDG vs best", "Sites BRDG beats", "Sites beating BRDG"].map((h, i) => el("th", { class: i && i !== 2 ? "num" : "", text: h })))));
     const wb = el("tbody");
     (D.route_winners || []).forEach(w => wb.append(el("tr", {}, el("td", { text: arrow(w.route) }), el("td", { class: "num", text: fmt(w.bridg_best) }),
       el("td", { text: S[w.top_site] || w.top_site }), el("td", { class: "num", text: fmt(w.top_out) }),
@@ -631,9 +631,9 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
           td = el("td", { tabindex: "0", style: `background:var(--${tok});color:${inkFor(tok)}` },
             el("span", { class: "n", text: sgn(c.savings_bps) }), el("span", { class: "s", text: fmt(c.other_avg, 3) }));
         }
-        const nodes = () => c ? [el("div", { class: "tv", text: sgn(c.savings_bps) + " bps " + (c.savings_bps >= 0 ? "Bridg pays more" : "direct pays more") }),
+        const nodes = () => c ? [el("div", { class: "tv", text: sgn(c.savings_bps) + " bps " + (c.savings_bps >= 0 ? "BRDG pays more" : "direct pays more") }),
           el("div", { class: "tl", text: `${S[v]} · ${arrow(r)} · ${c.n} samples` }),
-          el("div", { class: "kr" }, el("b", { style: "background:var(--s1)" }), el("span", { text: "Bridg best " + fmt(c.bridg_best_avg) })),
+          el("div", { class: "kr" }, el("b", { style: "background:var(--s1)" }), el("span", { text: "BRDG best " + fmt(c.bridg_best_avg) })),
           el("div", { class: "kr" }, el("b", { style: "background:var(--s2)" }), el("span", { text: (S[v] || v) + " " + fmt(c.other_avg) })),
           el("div", { class: "tl", text: `range ${sgn(c.min)} to ${sgn(c.max)}` + (c.fee_on_top_not_converted ? " · plus a fee on top in SOL/ETH, not counted" : "") })]
           : [el("div", { class: "tl", text: "No quote from this site on this route" })];
@@ -658,7 +658,7 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
     t.append(tb);
     const sc = $("sv-scale"); sc.replaceChildren(el("span", { class: "lab", text: "Going direct pays more" }));
     bins.forEach(b => sc.append(el("i", { style: `background:var(--${b[2]})` })));
-    sc.append(el("span", { class: "lab", text: "Bridg pays more" }));
+    sc.append(el("span", { class: "lab", text: "BRDG pays more" }));
   }
   drawSV(); drawHM(); drawRoute();
   window.__redraw = () => drawDot($("route").value);

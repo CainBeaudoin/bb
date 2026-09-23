@@ -53,7 +53,7 @@ Path to the auto-bridged deposit (Solana is the destination):
 | BSC→SOL (at the $2 minimum) | ~26 s | −8.357% (~$0.17) | ~$0.21 | instant liquidity <$0.01, routing <$0.01, gas $0.21 |
 | Base→SOL (at the $2 minimum) | ~26 s | −0.455% | ~$0.02 | — |
 
-These fees are indicative only. The page says fees and impact vary with the amount sent, so they are not compared against Bridg.
+These fees are indicative only. The page says fees and impact vary with the amount sent, so they are not compared against BRDG.
 
 Before the sign-in, a fresh automated browser got a Cloudflare 403 from axiom.trade. The site loaded normally in the browser pane.
 
@@ -109,7 +109,7 @@ Screenshots were saved locally under `probe/`, which is ignored by git, so they 
 
 | Venue | How the route is set | Routes |
 |---|---|---|
-| Bridg | `https://bridg.now/swap/`: asset pickers, clicking `button[data-testid=asset-selector-option][data-asset=USDC][data-chain=…]`; per-venue rows from `[data-testid=board-row]` | all 6 |
+| BRDG | `https://bridg.now/swap/`: asset pickers, clicking `button[data-testid=asset-selector-option][data-asset=USDC][data-chain=…]`; per-venue rows from `[data-testid=board-row]` | all 6 |
 | Relay | `https://relay.link/bridge/{to}?fromChainId=…&fromCurrency=<USDC>&toCurrency=<USDC>` | all 6 |
 | deBridge | `https://app.debridge.finance/?inputChain=…&outputChain=…&inputCurrency=…&outputCurrency=…&dlnMode=simple` (adds a fixed fee on top of the input) | all 6 |
 | LI.FI (Jumper) | `https://jumper.exchange/?fromChain=…&toChain=…&fromToken=…&toToken=…` | all 6 |
@@ -127,13 +127,13 @@ Screenshots were saved locally under `probe/`, which is ignored by git, so they 
 | Eco | BLOCKED: `portal.eco.com` has no Solana or BNB Chain | none |
 | NEAR Intents | BLOCKED: `app.near-intents.org` has moved to near.com/swap, which needs a login | none |
 
-The code for each venue is in `sites.py` (Bridg, Relay, deBridge, LI.FI, Across, Mayan) or `adapters/<venue>.py`. Blocked venues and platforms keep their reason, URL and check time in their `BLOCKED` dict.
+The code for each venue is in `sites.py` (BRDG, Relay, deBridge, LI.FI, Across, Mayan) or `adapters/<venue>.py`. Blocked venues and platforms keep their reason, URL and check time in their `BLOCKED` dict.
 
 ---
 
-## Bridg API diagnostics (`data/api/`, 14:45:35 UTC)
+## BRDG API diagnostics (`data/api/`, 14:45:35 UTC)
 
-These were indicative quotes (`indicative: true`, which can't be executed) from `POST https://api.bridg.now/v1/bridge/quote`. They used the example sender and recipient from Bridg's docs, plus a randomly generated Solana address. The API was used only to explain gaps, never as the benchmark.
+These were indicative quotes (`indicative: true`, which can't be executed) from `POST https://api.bridg.now/v1/bridge/quote`. They used the example sender and recipient from BRDG's docs, plus a randomly generated Solana address. The API was used only to explain gaps, never as the benchmark.
 
 | File | Recipient | Relay out | Relay "destination fill gas" |
 |---|---|---|---|

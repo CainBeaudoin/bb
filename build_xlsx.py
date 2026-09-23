@@ -78,7 +78,7 @@ def diverging(ws, rng):
 raw = wb.active
 raw.title = "Raw Quotes"
 cols = ["Run ID", "Route", "Sample", "Site", "Kind", "Status", "requestStart (UTC)", "quoteVisible (UTC)",
-        "screenshotAt (UTC)", "Δ read vs Bridg (s)", "Out (USDC)", "Fee on top", "Fee token", "Detail", "Page URL",
+        "screenshotAt (UTC)", "Δ read vs BRDG (s)", "Out (USDC)", "Fee on top", "Fee token", "Detail", "Page URL",
         "Campaign", "Value read at (UTC)", "Settled at (UTC)", "Run read spread (s)"]
 header(raw, 1, cols, [14, 11, 8, 16, 9, 12, 25, 25, 25, 11, 13, 11, 10, 60, 50, 17, 25, 25, 12])
 r = 2
@@ -104,16 +104,16 @@ for run_id, recs in runs.items():
 raw.auto_filter.ref = f"A1:{L(len(cols))}{r - 1}"
 put(raw, r + 1, 1, "Append-only record from runner.py (data/raw_quotes.jsonl). Blue = observed values read from each site's UI. "
     "Times are UTC with milliseconds. 'Value read at' is when the compared value was read — all sites in a run read at "
-    "the same moment (snapshot barrier); Δ read = |value read − Bridg's value read| in that run.", MUTED)
+    "the same moment (snapshot barrier); Δ read = |value read − BRDG's value read| in that run.", MUTED)
 
 # ------------------------------------------------------------------ Venue Analysis
 va = wb.create_sheet("Venue Analysis", 0)
-put(va, 1, 1, "Venue Analysis — is Bridg's listed quote for each venue the same as the venue's own site?", H1)
-put(va, 2, 1, "Gap (bps) = (Bridg listed − venue direct) / 100 × 10,000. Ex-fee adds Bridg's platform fee back. "
+put(va, 1, 1, "Venue Analysis — is BRDG's listed quote for each venue the same as the venue's own site?", H1)
+put(va, 2, 1, "Gap (bps) = (BRDG listed − venue direct) / 100 × 10,000. Ex-fee adds BRDG's platform fee back. "
     "Direct = venue out − any USDC fee charged on top of the 100 input. Blue = observed inputs; black = formulas.", MUTED)
 # per-sample table starts at row 5 in columns A..M; summary block to the right
-cols = ["Route", "Sample", "Venue", "Bridg listed", "Compare only", "Venue out", "USDC fee on top", "Direct (cmp)",
-        "Gap bps", "Bridg fee (USDC)", "Gap ex-fee bps", "Δ read (s)", "Note", "Bridg value read (UTC)", "Venue value read (UTC)"]
+cols = ["Route", "Sample", "Venue", "BRDG listed", "Compare only", "Venue out", "USDC fee on top", "Direct (cmp)",
+        "Gap bps", "BRDG fee (USDC)", "Gap ex-fee bps", "Δ read (s)", "Note", "BRDG value read (UTC)", "Venue value read (UTC)"]
 header(va, 4, cols, [11, 8, 16, 13, 9, 13, 11, 13, 10, 11, 11, 9, 40, 25, 25])
 r0 = 5
 rows_sorted = sorted(vrows, key=lambda x: (ROUTES.index(x["route"]), VENUES.index(x["venue"]) if x["venue"] in VENUES else 99, x["sample"]))
@@ -138,7 +138,7 @@ diverging(va, f"K{r0}:K{rN}")
 va.auto_filter.ref = f"A4:O{rN}"
 # summary block to the right of the per-sample table
 sc = 17
-scols = ["Route", "Venue", "Samples", "Listed on Bridg", "Bridg avg", "Direct avg", "Gap bps (avg)", "Ex-fee bps (avg)",
+scols = ["Route", "Venue", "Samples", "Listed on BRDG", "BRDG avg", "Direct avg", "Gap bps (avg)", "Ex-fee bps (avg)",
          "Tolerance bps", "Verdict"]
 for i, c in enumerate(scols):
     cell = va.cell(row=4, column=sc + i, value=c)
@@ -165,9 +165,9 @@ for route in ROUTES:
         put(va, sr, sc + 7, f'=IFERROR(AVERAGEIFS($K${r0}:$K${rN},{crit}),"—")', BODY, BPS)
         put(va, sr, sc + 8, 4 if v == "mayan" else 2, INPUT)
         g, raw_, tol, n = f"{c(7)}{sr}", f"{c(6)}{sr}", f"{c(8)}{sr}", f"{c(3)}{sr}"
-        put(va, sr, sc + 9, f'=IF({n}=0,"NOT LISTED on Bridg",IF(NOT(ISNUMBER({g})),"No direct quote",'
-                            f'IF(ABS({g})<={tol},"Match (net of Bridg fee)",IF(ABS({raw_})<={tol},"Match (Bridg fee not applied)",'
-                            f'IF({g}<0,"Bridg LOWER than venue","Bridg HIGHER than venue")))))')
+        put(va, sr, sc + 9, f'=IF({n}=0,"NOT LISTED on BRDG",IF(NOT(ISNUMBER({g})),"No direct quote",'
+                            f'IF(ABS({g})<={tol},"Match (net of BRDG fee)",IF(ABS({raw_})<={tol},"Match (BRDG fee not applied)",'
+                            f'IF({g}<0,"BRDG LOWER than venue","BRDG HIGHER than venue")))))')
         summary_rows[(route, v)] = sr
         sr += 1
 diverging(va, f"{L(sc + 7)}5:{L(sc + 7)}{sr - 1}")
@@ -176,15 +176,15 @@ VA_SUM = (5, sr - 1, sc)
 
 # ------------------------------------------------------------------ Competitor Matrix
 cm = wb.create_sheet("Competitor Matrix", 0)
-put(cm, 1, 1, "Competitor Matrix — does a user get more on Bridg, or by going direct?", H1)
-put(cm, 2, 1, "Savings (bps) = (Bridg best − other) / 100 × 10,000. Positive = Bridg pays more. Bridg best = what Bridg's "
+put(cm, 1, 1, "Competitor Matrix — does a user get more on BRDG, or by going direct?", H1)
+put(cm, 2, 1, "Savings (bps) = (BRDG best − other) / 100 × 10,000. Positive = BRDG pays more. BRDG best = what BRDG's "
     "own page says you receive on its best-price route. Source-chain gas paid separately is not counted on either side.", MUTED)
 # per-sample table, rows from 30 down; matrix at the top
 MAT_TOP = 4
 sites_order = PLATFORMS + VENUES
 first_sample_row = MAT_TOP + len(sites_order) + len(BLOCKED) + 12
-cols = ["Route", "Sample", "Site", "Kind", "Bridg best", "Bridg best via", "Other out (cmp)", "Savings bps",
-        "Fee on top in SOL/ETH (not counted)", "Bridg value read (UTC)", "Other value read (UTC)", "Δ read (s)"]
+cols = ["Route", "Sample", "Site", "Kind", "BRDG best", "BRDG best via", "Other out (cmp)", "Savings bps",
+        "Fee on top in SOL/ETH (not counted)", "BRDG value read (UTC)", "Other value read (UTC)", "Δ read (s)"]
 for i, c in enumerate(cols, 1):
     cell = cm.cell(row=first_sample_row - 1, column=i, value=c)
     cell.font, cell.fill = HDR, HFILL
@@ -232,8 +232,8 @@ MAT = (hr + 1, hr + len(sites_order))
 # route winners under the matrix
 wr = mr + 2
 put(cm, wr, 1, "Route winners", H2)
-for i, c in enumerate(["Route", "Bridg best (avg)", "Best elsewhere (avg out)", "Site", "Bridg vs best (bps)",
-                       "Sites Bridg beats", "Sites beating Bridg"], 1):
+for i, c in enumerate(["Route", "BRDG best (avg)", "Best elsewhere (avg out)", "Site", "BRDG vs best (bps)",
+                       "Sites BRDG beats", "Sites beating BRDG"], 1):
     cell = cm.cell(row=wr + 1, column=i, value=c)
     cell.font, cell.fill = HDR, HFILL
     cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
@@ -256,20 +256,20 @@ for j, route in enumerate(ROUTES):
     mcol = L(3 + j)
     mrng = f"${mcol}${hr + 1}:${mcol}${hr + len(sites_order)}"
     put(cm, r, 1, arrow(route))
-    # Bridg best averaged once per run, from Raw Quotes (Bridg rows carry its best "you receive")
-    put(cm, r, 2, f"=IFERROR(AVERAGEIFS('Raw Quotes'!$K:$K,'Raw Quotes'!$B:$B,\"{route}\",'Raw Quotes'!$D:$D,\"Bridg\",'Raw Quotes'!$F:$F,\"OK\"),\"\")", LINK, USDC)
+    # BRDG best averaged once per run, from Raw Quotes (BRDG rows carry its best "you receive")
+    put(cm, r, 2, f"=IFERROR(AVERAGEIFS('Raw Quotes'!$K:$K,'Raw Quotes'!$B:$B,\"{route}\",'Raw Quotes'!$D:$D,\"BRDG\",'Raw Quotes'!$F:$F,\"OK\"),\"\")", LINK, USDC)
     put(cm, r, 3, f"=MAX({rng})", BODY, USDC)
     put(cm, r, 4, f"=INDEX(${L(hc)}${hr + 1}:${L(hc)}${hr + len(sites_order)},MATCH(C{r},{rng},0))")
     put(cm, r, 5, f"=(B{r}-C{r})/100*10000", BODY, BPS)
     put(cm, r, 6, f'=COUNTIF({mrng},">2")')
     put(cm, r, 7, f'=COUNTIF({mrng},"<-2")')
-    put(cm, r, 8, "Bridg best is averaged per synchronized run (Raw Quotes); savings compare it with the best per-site average.", MUTED) if j == 0 else None
+    put(cm, r, 8, "BRDG best is averaged per synchronized run (Raw Quotes); savings compare it with the best per-site average.", MUTED) if j == 0 else None
     WIN[route] = r
 diverging(cm, f"E{wr + 2}:E{wr + 1 + len(ROUTES)}")
 
 # ------------------------------------------------------------------ Receipts
 rc = wb.create_sheet("Receipts")
-cols = ["Route", "Sample", "Site", "requestStart (UTC)", "quoteVisible (UTC)", "screenshotAt (UTC)", "Δ vs Bridg (s)",
+cols = ["Route", "Sample", "Site", "requestStart (UTC)", "quoteVisible (UTC)", "screenshotAt (UTC)", "Δ vs BRDG (s)",
         "Out (USDC)", "Crop screenshot", "Crop SHA-256", "Full-page screenshot", "Full SHA-256", "Value read at (UTC)"]
 header(rc, 1, cols, [11, 8, 16, 25, 25, 25, 11, 13, 16, 66, 16, 66, 25])
 order = ["bridg"] + sites_order
@@ -289,11 +289,11 @@ rc.auto_filter.ref = f"A1:M{1 + len(recs)}"
 
 # ------------------------------------------------------------------ Platform Registry
 pr = wb.create_sheet("Platform Registry")
-cols = ["Name", "Kind", "Status", "Routes quoted (own UI)", "Bridg venue id", "URL / method", "Reason / notes", "Checked"]
+cols = ["Name", "Kind", "Status", "Routes quoted (own UI)", "BRDG venue id", "URL / method", "Reason / notes", "Checked"]
 header(pr, 1, cols, [18, 10, 12, 44, 15, 50, 80, 22])
 r = 2
 urls = D.get("site_urls", {})
-put(pr, r, 1, "Bridg"); put(pr, r, 2, "subject"); put(pr, r, 3, "WORKING"); put(pr, r, 4, "all 6")
+put(pr, r, 1, "BRDG"); put(pr, r, 2, "subject"); put(pr, r, 3, "WORKING"); put(pr, r, 4, "all 6")
 put(pr, r, 6, "https://bridg.now/swap/"); put(pr, r, 7, "Per-venue live-quote board + best/fastest fee breakdown; no wallet needed"); r += 1
 for n, a in ADAPTERS.items():
     if n == "bridg":
@@ -335,18 +335,18 @@ for c in "BCDEFGH":
     db.column_dimensions[c].width = 16
 db.column_dimensions["C"].width = 25
 db.column_dimensions["D"].width = 25
-put(db, 1, 1, "Bridg Competitive Benchmark", H1)
+put(db, 1, 1, "BRDG Competitive Benchmark", H1)
 put(db, 2, 1, f"100 USDC → USDC · 6 routes · quotes read from each site's own web UI, no wallet connected · "
     f"collected {D['window']['first'][:16].replace('T', ' ')} – {D['window']['last'][11:16]} UTC", MUTED)
 vs0, vs1, vsc = VA_SUM
 verd = f"'Venue Analysis'!${L(vsc + 9)}${vs0}:${L(vsc + 9)}${vs1}"
 kpis = [
-    ("Routes where Bridg's best beat every direct quote", f"=COUNTIF('Competitor Matrix'!$E${WIN[ROUTES[0]]}:$E${WIN[ROUTES[-1]]},\">=-2\")&\" / {len(ROUTES)}\""),
-    ("Venue pairs where Bridg's listing matches the venue's site", f"=COUNTIF({verd},\"Match*\")&\" / \"&COUNTA({verd})"),
-    ("… Bridg lists LESS than the venue's own site", f"=COUNTIF({verd},\"Bridg LOWER*\")"),
-    ("… Bridg lists MORE than the venue's own site", f"=COUNTIF({verd},\"Bridg HIGHER*\")"),
-    ("… venue quotes on its site but is missing from Bridg", f"=COUNTIF({verd},\"NOT LISTED*\")"),
-    ("Worst venue-accuracy gap (bps, ex-Bridg fee)", f"=MIN('Venue Analysis'!${L(vsc + 7)}${vs0}:${L(vsc + 7)}${vs1})"),
+    ("Routes where BRDG's best beat every direct quote", f"=COUNTIF('Competitor Matrix'!$E${WIN[ROUTES[0]]}:$E${WIN[ROUTES[-1]]},\">=-2\")&\" / {len(ROUTES)}\""),
+    ("Venue pairs where BRDG's listing matches the venue's site", f"=COUNTIF({verd},\"Match*\")&\" / \"&COUNTA({verd})"),
+    ("… BRDG lists LESS than the venue's own site", f"=COUNTIF({verd},\"BRDG LOWER*\")"),
+    ("… BRDG lists MORE than the venue's own site", f"=COUNTIF({verd},\"BRDG HIGHER*\")"),
+    ("… venue quotes on its site but is missing from BRDG", f"=COUNTIF({verd},\"NOT LISTED*\")"),
+    ("Worst venue-accuracy gap (bps, ex-BRDG fee)", f"=MIN('Venue Analysis'!${L(vsc + 7)}${vs0}:${L(vsc + 7)}${vs1})"),
     ("Campaign (all quotes collected in one window)", f"{D.get('campaign')} · {D['window']['first'][:19].replace('T', ' ')} – {D['window']['last'][11:19]} UTC"),
     ("Worst value-read spread within a run (s)", "=MAX('Raw Quotes'!$S:$S)"),
     ("Venues / platforms compared", f"{len(VENUES)} venues + {len(PLATFORMS)} platforms"),
@@ -359,8 +359,8 @@ for i, (k, f) in enumerate(kpis):
     put(db, 5 + i, 2, f, LINK if f.startswith("=") else BODY, BPS if "bps" in k else None).font = Font(name=F, size=11, bold=True,
                                                                                                       color="008000" if f.startswith("=") else "000000")
 t = 5 + len(kpis) + 2
-put(db, t, 1, "Route winners (Bridg best vs best direct quote)", H2)
-for i, c in enumerate(["Route", "Bridg best", "Best elsewhere", "Site", "Bridg vs best (bps)", "Sites Bridg beats", "Sites beating Bridg"], 1):
+put(db, t, 1, "Route winners (BRDG best vs best direct quote)", H2)
+for i, c in enumerate(["Route", "BRDG best", "Best elsewhere", "Site", "BRDG vs best (bps)", "Sites BRDG beats", "Sites beating BRDG"], 1):
     cell = db.cell(row=t + 1, column=i, value=c)
     cell.font, cell.fill = HDR, HFILL
     cell.alignment = Alignment(horizontal="center", wrap_text=True)
@@ -370,7 +370,7 @@ for j, route in enumerate(ROUTES):
         put(db, r, c, f"='Competitor Matrix'!{L(c)}{WIN[route]}", LINK, [None, USDC, USDC, None, BPS, None, None][c - 1])
 diverging(db, f"E{t + 2}:E{t + 1 + len(ROUTES)}")
 t2 = t + 2 + len(ROUTES) + 1
-put(db, t2, 1, "Venue accuracy (avg gap ex-Bridg fee, bps) — Bridg listed vs venue's own site", H2)
+put(db, t2, 1, "Venue accuracy (avg gap ex-BRDG fee, bps) — BRDG listed vs venue's own site", H2)
 for i, c in enumerate(["Venue"] + [arrow(x) for x in ROUTES], 1):
     cell = db.cell(row=t2 + 1, column=i, value=c)
     cell.font, cell.fill = HDR, HFILL
@@ -397,7 +397,7 @@ for i, s_ in enumerate(D.get("sync_runs", [])):
     for c, v in enumerate([arrow(s_["route"]), s_["sample"], s_.get("typedAt"), s_.get("valueReadAt"), s_["typed_spread_s"],
                            s_["value_read_spread_s"], s_["screenshot_spread_s"], f"{s_['n_ok']}/{s_['n_sites']}"], 1):
         put(db, rr, c, v, INPUT if c in (5, 6, 7) else BODY, "0.000" if c in (5, 6, 7) else None)
-put(db, t2 + 3 + len(VENUES), 1, "Green = linked from other sheets. Red cells: Bridg lower / going direct pays more; blue: Bridg higher / Bridg pays more. "
+put(db, t2 + 3 + len(VENUES), 1, "Green = linked from other sheets. Red cells: BRDG lower / going direct pays more; blue: BRDG higher / BRDG pays more. "
     "Hypotheses in Issues are unverified.", MUTED)
 
 # ------------------------------------------------------------------ One-Pager Export
@@ -405,7 +405,7 @@ op = wb.create_sheet("One-Pager Export")
 op.column_dimensions["A"].width = 30
 for c in "BCDEFG":
     op.column_dimensions[c].width = 15
-put(op, 1, 1, "Bridg Competitive Benchmark — one-pager", H1)
+put(op, 1, 1, "BRDG Competitive Benchmark — one-pager", H1)
 put(op, 2, 1, "=Dashboard!A2", MUTED)
 put(op, 4, 1, "Headline", H2)
 for i in range(len(kpis)):
@@ -425,7 +425,7 @@ for i, x in enumerate([x for x in D["issues"] if x["severity"] == "serious"][:5]
     put(op, o2 + 1 + i, 1, f"=Issues!C{D['issues'].index(x) + 2}", Font(name=F, size=10, bold=True, color="008000"))
     op.merge_cells(start_row=o2 + 1 + i, start_column=1, end_row=o2 + 1 + i, end_column=7)
 put(op, o2 + 8, 1, "Method: fresh Playwright browser per site, no wallet; 100 typed into all pages at one barrier; quotes within ~1.5 s "
-    "of Bridg's. Evidence: screenshots + SHA-256 in Receipts. Dashboard: see repo README.", MUTED)
+    "of BRDG's. Evidence: screenshots + SHA-256 in Receipts. Dashboard: see repo README.", MUTED)
 op.merge_cells(start_row=o2 + 8, start_column=1, end_row=o2 + 8, end_column=7)
 op.page_setup.orientation = "landscape"
 op.page_setup.fitToWidth = 1
