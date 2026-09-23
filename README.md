@@ -33,3 +33,14 @@ Local preview: `python3 -m http.server 8765` then open http://localhost:8765.
 `Bridg_Competitive_Benchmark.xlsx`: Dashboard, Competitor Matrix, Venue Analysis, Receipts, Platform Registry,
 Raw Quotes, Issues, One-Pager Export. Observations are blue inputs; gaps, savings, averages and verdicts are live
 formulas (recalculated on open).
+
+## Timing
+
+Each run uses two barriers across all sites (fresh browser context each):
+1. **typed** — "100" is typed into every page at the same instant (`requestStart`);
+2. **values read** — once every site's quote has settled, all sites read the value that gets compared at the same
+   instant (`valueReadAt`), then screenshot (`screenshotAt`). `quoteVisible` / `settledAt` are kept for reference.
+
+Every record carries `campaign`, and each run records `run_sync` (typed / value-read / screenshot spreads). Sites whose
+value was read >2 s from Bridg's are flagged, the route is retried, and flagged records are excluded. The dashboard and
+workbook use the latest campaign only (`compare.load_runs(raw, campaign="latest")`); older sessions stay in the raw file.

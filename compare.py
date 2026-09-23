@@ -9,10 +9,20 @@ from collections import defaultdict
 from sites import ADAPTERS
 VENUE_IDS = {n: a.bridg_id for n, a in ADAPTERS.items() if getattr(a, "bridg_id", None)}
 
-def load_runs(raw):
+def load_runs(raw, campaign="latest"):
+    """Group records by synchronized run. By default only the latest campaign is used (all quotes collected
+    in one window), and site records whose compared value was read >2 s from Bridg's (gap_flag) are dropped —
+    their route was re-run and the retry is kept."""
+    recs = [json.loads(line) for line in open(raw)]
+    if campaign == "latest":
+        camps = [r["campaign"] for r in recs if r.get("campaign")]
+        campaign = max(camps) if camps else None
     runs = defaultdict(list)
-    for line in open(raw):
-        r = json.loads(line)
+    for r in recs:
+        if campaign and r.get("campaign") != campaign:
+            continue
+        if r.get("gap_flag"):
+            continue
         runs[r["run_id"]].append(r)
     return runs
 
@@ -36,6 +46,8 @@ def build_rows(runs):
           if not v:
               continue
           row = {"run_id": run_id, "route": b["route"], "sample": b["sample"], "venue": site,
+                 "bridg_valueReadAt": b.get("valueReadAt"), "venue_valueReadAt": v.get("valueReadAt"),
+                 "read_gap_s": v.get("gap_vs_bridg_s"), "run_read_spread_s": (b.get("run_sync") or {}).get("value_read_spread_s"),
                  "bridg_requestStart": b.get("requestStart"), "bridg_quoteVisible": b.get("quoteVisible"),
                  "venue_requestStart": v.get("requestStart"), "venue_quoteVisible": v.get("quoteVisible"),
                  "gap_s": v.get("gap_vs_bridg_s"), "venue_status": v.get("status")}
@@ -76,7 +88,7 @@ def build_rows(runs):
   return rows
 
 
-cols = ["route", "sample", "venue", "bridg_listed", "bridg_compare_only", "direct_out", "direct_fixed_fee",
+cols = ["route", "sample", "venue", "bridg_valueReadAt", "venue_valueReadAt", "read_gap_s", "run_read_spread_s", "bridg_listed", "bridg_compare_only", "direct_out", "direct_fixed_fee",
         "direct_out_fee_adj", "direct_cmp", "gap_bps", "bridg_fee_observed", "gap_ex_bridg_fee_bps", "gap_s",
         "venue_status", "direct_note", "bridg_requestStart", "bridg_quoteVisible", "venue_requestStart",
         "venue_quoteVisible", "run_id"]
@@ -156,6 +168,8 @@ def build_competitor_rows(runs):
             if other is None or other > 102:  # display anomaly, logged elsewhere
                 continue
             out.append({"route": b["route"], "sample": b["sample"], "site": site, "run_id": run_id,
+                        "bridg_valueReadAt": b.get("valueReadAt"), "other_valueReadAt": r.get("valueReadAt"),
+                        "read_gap_s": r.get("gap_vs_bridg_s"),
                         "kind": getattr(ADAPTERS.get(site), "kind", "venue"),
                         "bridg_best": best, "bridg_best_route": b["quote"].get("detail_route"),
                         "other_out": round(other, 6),

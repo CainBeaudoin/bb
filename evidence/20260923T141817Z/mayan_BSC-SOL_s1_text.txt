@@ -1,0 +1,20 @@
+Swap
+Explorer
+Connect Wallet
+More
+From
+USDC
+BSC
+≈$99.98
+To
+USDC
+Solana
+99.69
+≈$99.67
+Guaranteed Price
+Gas drop on destination
+Swift v2
+3s
+Connect Wallet
+1 USDC = 0.9996 USDC
+More

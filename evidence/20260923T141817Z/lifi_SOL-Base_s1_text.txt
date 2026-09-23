@@ -1,0 +1,139 @@
+Trade
+
+Earn
+
+Portfolio
+
+Missions
+
+Connect
+
+Jumper Advanced is Live
+Swap & Bridge
+Private
+Gas
+
+Send
+
+USDC
+
+$99.87
+
+Receive
+
+100
+
+USDC
+
+$100.36
+
+Send to wallet
+
+Required
+
+Enter wallet address
+Connect wallet
+
+Receive
+
+Best Return
+
+100
+
+$100.36
+
+•
+
+Eco
+
+1 USDC ≈ 1 USDC
+
+<$0.01
+
+7s
+
+99.93901
+
+$100.30
+
+•
+
+CCTPv2 + Mayan
+
+1 USDC ≈ 0.99939 USDC
+
+<$0.01
+
+35s
+
+Fastest
+
+99.937898
+
+$100.30
+
+•
+
+Relay
+
+1 USDC ≈ 0.999378 USDC
+
+<$0.01
+
+2s
+
+99.933242
+
+$100.30
+
+•
+
+Mayan (Swift)
+
+1 USDC ≈ 0.999332 USDC
+
+<$0.01
+
+3s
+
+99.864045
+
+$100.23
+
+•
+
+Layerswap
+
+1 USDC ≈ 0.99864 USDC
+
+<$0.01
+
+6s
+
+99.99
+
+$100.35
+
+•
+
+Glacis
+
+1 USDC ≈ 0.999899 USDC
+
+$0.21
+
+20s
+
+98.982569
+
+$99.34
+
+•
+
+CCTP + Mayan
+
+1 USDC ≈ 0.989825 USDC
+
+<$0.01
+
+1m

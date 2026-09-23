@@ -1,0 +1,30 @@
+Swap
+Vaults
+Transactions
+/
+Connect
+Trending
+TAKE
+USELESS
+BONK
+Swap
+Buy
+Sell
+Select wallet
+USDC
+Solana
+$99.98
+Buy
+Select wallet
+USDC
+Ethereum
+$99.07
+(-0.91%)
+Max Slippage
+Auto
+1.99%
+1 USDC = 0.9908 USDC
+~ 6s
+•
+$0.06
+CONNECT WALLET

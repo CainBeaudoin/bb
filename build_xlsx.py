@@ -78,8 +78,9 @@ def diverging(ws, rng):
 raw = wb.active
 raw.title = "Raw Quotes"
 cols = ["Run ID", "Route", "Sample", "Site", "Kind", "Status", "requestStart (UTC)", "quoteVisible (UTC)",
-        "screenshotAt (UTC)", "Δ vs Bridg (s)", "Out (USDC)", "Fee on top", "Fee token", "Detail", "Page URL"]
-header(raw, 1, cols, [14, 11, 8, 16, 9, 12, 25, 25, 25, 11, 13, 11, 10, 60, 50])
+        "screenshotAt (UTC)", "Δ read vs Bridg (s)", "Out (USDC)", "Fee on top", "Fee token", "Detail", "Page URL",
+        "Campaign", "Value read at (UTC)", "Settled at (UTC)", "Run read spread (s)"]
+header(raw, 1, cols, [14, 11, 8, 16, 9, 12, 25, 25, 25, 11, 13, 11, 10, 60, 50, 17, 25, 25, 12])
 r = 2
 for run_id, recs in runs.items():
     for x in recs:
@@ -95,13 +96,15 @@ for run_id, recs in runs.items():
                 getattr(ADAPTERS.get(x["site"]), "kind", "venue") if x["site"] != "bridg" else "bridg",
                 x.get("status"), x.get("requestStart"), x.get("quoteVisible"), x.get("screenshotAt"),
                 x.get("gap_vs_bridg_s"), out, q.get("fixed_fee_on_top"), q.get("fixed_fee_token"),
-                detail or (x.get("error") or "")[:200], x.get("url")]
+                detail or (x.get("error") or "")[:200], x.get("url"),
+                x.get("campaign"), x.get("valueReadAt"), x.get("settledAt"), (x.get("run_sync") or {}).get("value_read_spread_s")]
         for c, v in enumerate(vals, 1):
-            put(raw, r, c, v, INPUT if c in (10, 11, 12) else BODY, USDC if c == 11 else None)
+            put(raw, r, c, v, INPUT if c in (10, 11, 12, 19) else BODY, USDC if c == 11 else ("0.000" if c in (10, 19) else None))
         r += 1
 raw.auto_filter.ref = f"A1:{L(len(cols))}{r - 1}"
 put(raw, r + 1, 1, "Append-only record from runner.py (data/raw_quotes.jsonl). Blue = observed values read from each site's UI. "
-    "Times are UTC with milliseconds; Δ = |quoteVisible − Bridg quoteVisible| in the same synchronized run.", MUTED)
+    "Times are UTC with milliseconds. 'Value read at' is when the compared value was read — all sites in a run read at "
+    "the same moment (snapshot barrier); Δ read = |value read − Bridg's value read| in that run.", MUTED)
 
 # ------------------------------------------------------------------ Venue Analysis
 va = wb.create_sheet("Venue Analysis", 0)
@@ -110,8 +113,8 @@ put(va, 2, 1, "Gap (bps) = (Bridg listed − venue direct) / 100 × 10,000. Ex-f
     "Direct = venue out − any USDC fee charged on top of the 100 input. Blue = observed inputs; black = formulas.", MUTED)
 # per-sample table starts at row 5 in columns A..M; summary block to the right
 cols = ["Route", "Sample", "Venue", "Bridg listed", "Compare only", "Venue out", "USDC fee on top", "Direct (cmp)",
-        "Gap bps", "Bridg fee (USDC)", "Gap ex-fee bps", "Δt (s)", "Note"]
-header(va, 4, cols, [11, 8, 16, 13, 9, 13, 11, 13, 10, 11, 11, 8, 48])
+        "Gap bps", "Bridg fee (USDC)", "Gap ex-fee bps", "Δ read (s)", "Note", "Bridg value read (UTC)", "Venue value read (UTC)"]
+header(va, 4, cols, [11, 8, 16, 13, 9, 13, 11, 13, 10, 11, 11, 9, 40, 25, 25])
 r0 = 5
 rows_sorted = sorted(vrows, key=lambda x: (ROUTES.index(x["route"]), VENUES.index(x["venue"]) if x["venue"] in VENUES else 99, x["sample"]))
 for i, x in enumerate(rows_sorted):
@@ -127,13 +130,14 @@ for i, x in enumerate(rows_sorted):
     put(va, r, 9, f'=IF(AND(ISNUMBER(D{r}),ISNUMBER(H{r})),(D{r}-H{r})/100*10000,"")', BODY, BPS)
     put(va, r, 10, x.get("bridg_fee_observed"), INPUT, USDC)
     put(va, r, 11, f'=IF(ISNUMBER(I{r}),I{r}+N(J{r})/100*10000,"")', BODY, BPS)
-    put(va, r, 12, x.get("gap_s"), INPUT, "0.00")
+    put(va, r, 12, x.get("read_gap_s"), INPUT, "0.000")
     put(va, r, 13, x.get("direct_note") or "")
+    put(va, r, 14, x.get("bridg_valueReadAt")); put(va, r, 15, x.get("venue_valueReadAt"))
 rN = r0 + len(rows_sorted) - 1
 diverging(va, f"K{r0}:K{rN}")
-va.auto_filter.ref = f"A4:M{rN}"
-# summary block: columns O..X
-sc = 15
+va.auto_filter.ref = f"A4:O{rN}"
+# summary block to the right of the per-sample table
+sc = 17
 scols = ["Route", "Venue", "Samples", "Listed on Bridg", "Bridg avg", "Direct avg", "Gap bps (avg)", "Ex-fee bps (avg)",
          "Tolerance bps", "Verdict"]
 for i, c in enumerate(scols):
@@ -179,7 +183,8 @@ put(cm, 2, 1, "Savings (bps) = (Bridg best − other) / 100 × 10,000. Positive 
 MAT_TOP = 4
 sites_order = PLATFORMS + VENUES
 first_sample_row = MAT_TOP + len(sites_order) + len(BLOCKED) + 12
-cols = ["Route", "Sample", "Site", "Kind", "Bridg best", "Bridg best via", "Other out (cmp)", "Savings bps", "Fee on top in SOL/ETH (not counted)"]
+cols = ["Route", "Sample", "Site", "Kind", "Bridg best", "Bridg best via", "Other out (cmp)", "Savings bps",
+        "Fee on top in SOL/ETH (not counted)", "Bridg value read (UTC)", "Other value read (UTC)", "Δ read (s)"]
 for i, c in enumerate(cols, 1):
     cell = cm.cell(row=first_sample_row - 1, column=i, value=c)
     cell.font, cell.fill = HDR, HFILL
@@ -193,6 +198,8 @@ for i, x in enumerate(cs):
     put(cm, r, 7, x["other_out"], INPUT, USDC)
     put(cm, r, 8, f"=(E{r}-G{r})/100*10000", BODY, BPS)
     put(cm, r, 9, "yes" if x["fee_on_top_not_converted"] else "")
+    put(cm, r, 10, x.get("bridg_valueReadAt")); put(cm, r, 11, x.get("other_valueReadAt"))
+    put(cm, r, 12, x.get("read_gap_s"), INPUT, "0.000")
 cN = first_sample_row + len(cs) - 1
 diverging(cm, f"H{first_sample_row}:H{cN}")
 CA, CC = f"$A${first_sample_row}:$A${cN}", f"$C${first_sample_row}:$C${cN}"
@@ -232,7 +239,7 @@ for i, c in enumerate(["Route", "Bridg best (avg)", "Best elsewhere (avg out)", 
     cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
 cm.row_dimensions[wr + 1].height = 30
 # helper: per-site average "other out" per route in hidden-ish columns to the right (K..)
-hc = 12 + 1
+hc = 12 + 2
 put(cm, hr, hc, "Avg other out (helper)", MUTED)
 for j, route in enumerate(ROUTES):
     put(cm, hr, hc + 1 + j, arrow(route), HDR).fill = HFILL
@@ -263,8 +270,8 @@ diverging(cm, f"E{wr + 2}:E{wr + 1 + len(ROUTES)}")
 # ------------------------------------------------------------------ Receipts
 rc = wb.create_sheet("Receipts")
 cols = ["Route", "Sample", "Site", "requestStart (UTC)", "quoteVisible (UTC)", "screenshotAt (UTC)", "Δ vs Bridg (s)",
-        "Out (USDC)", "Crop screenshot", "Crop SHA-256", "Full-page screenshot", "Full SHA-256"]
-header(rc, 1, cols, [11, 8, 16, 25, 25, 25, 11, 13, 16, 66, 16, 66])
+        "Out (USDC)", "Crop screenshot", "Crop SHA-256", "Full-page screenshot", "Full SHA-256", "Value read at (UTC)"]
+header(rc, 1, cols, [11, 8, 16, 25, 25, 25, 11, 13, 16, 66, 16, 66, 25])
 order = ["bridg"] + sites_order
 recs = sorted(D["receipts"], key=lambda x: (ROUTES.index(x["route"]), x["sample"], order.index(x["site"]) if x["site"] in order else 99))
 for i, x in enumerate(recs):
@@ -277,7 +284,8 @@ for i, x in enumerate(recs):
         cell = put(rc, r, c, "open", Font(name=F, size=10, color="1D4ED8", underline="single"))
         cell.hyperlink = GH + x[key]["path"]
         put(rc, r, c + 1, x[key]["sha256"], Font(name="Courier New", size=9))
-rc.auto_filter.ref = f"A1:L{1 + len(recs)}"
+    put(rc, r, 13, x.get("valueReadAt"))
+rc.auto_filter.ref = f"A1:M{1 + len(recs)}"
 
 # ------------------------------------------------------------------ Platform Registry
 pr = wb.create_sheet("Platform Registry")
@@ -325,6 +333,8 @@ db = wb.create_sheet("Dashboard", 0)
 db.column_dimensions["A"].width = 44
 for c in "BCDEFGH":
     db.column_dimensions[c].width = 16
+db.column_dimensions["C"].width = 25
+db.column_dimensions["D"].width = 25
 put(db, 1, 1, "Bridg Competitive Benchmark", H1)
 put(db, 2, 1, f"100 USDC → USDC · 6 routes · quotes read from each site's own web UI, no wallet connected · "
     f"collected {D['window']['first'][:16].replace('T', ' ')} – {D['window']['last'][11:16]} UTC", MUTED)
@@ -337,6 +347,8 @@ kpis = [
     ("… Bridg lists MORE than the venue's own site", f"=COUNTIF({verd},\"Bridg HIGHER*\")"),
     ("… venue quotes on its site but is missing from Bridg", f"=COUNTIF({verd},\"NOT LISTED*\")"),
     ("Worst venue-accuracy gap (bps, ex-Bridg fee)", f"=MIN('Venue Analysis'!${L(vsc + 7)}${vs0}:${L(vsc + 7)}${vs1})"),
+    ("Campaign (all quotes collected in one window)", f"{D.get('campaign')} · {D['window']['first'][:19].replace('T', ' ')} – {D['window']['last'][11:19]} UTC"),
+    ("Worst value-read spread within a run (s)", "=MAX('Raw Quotes'!$S:$S)"),
     ("Venues / platforms compared", f"{len(VENUES)} venues + {len(PLATFORMS)} platforms"),
     ("Blocked (no public quote)", f"{sum(1 for b in BLOCKED.values() if b.get('kind', 'venue') == 'venue')} venues + "
                                   f"{sum(1 for b in BLOCKED.values() if b.get('kind') == 'platform')} platforms"),
@@ -373,6 +385,18 @@ for i, v in enumerate(VENUES):
         else:
             put(db, r, 2 + j, f"=IF('Venue Analysis'!{L(vsc + 3)}{sr_}=0,\"not listed\",'Venue Analysis'!{L(vsc + 7)}{sr_})", LINK, BPS)
 diverging(db, f"B{t2 + 2}:{L(1 + len(ROUTES))}{t2 + 1 + len(VENUES)}")
+tt = t2 + 5 + len(VENUES)
+put(db, tt, 1, "Run timing — every site typed at one instant, then all read their compared value at one instant", H2)
+for i, c in enumerate(["Route", "Sample", "Typed at (UTC)", "Values read at (UTC)", "Typed spread (s)", "Read spread (s)", "Screenshot spread (s)", "Sites OK"], 1):
+    cell = db.cell(row=tt + 1, column=i, value=c)
+    cell.font, cell.fill = HDR, HFILL
+    cell.alignment = Alignment(horizontal="center", wrap_text=True)
+db.row_dimensions[tt + 1].height = 30
+for i, s_ in enumerate(D.get("sync_runs", [])):
+    rr = tt + 2 + i
+    for c, v in enumerate([arrow(s_["route"]), s_["sample"], s_.get("typedAt"), s_.get("valueReadAt"), s_["typed_spread_s"],
+                           s_["value_read_spread_s"], s_["screenshot_spread_s"], f"{s_['n_ok']}/{s_['n_sites']}"], 1):
+        put(db, rr, c, v, INPUT if c in (5, 6, 7) else BODY, "0.000" if c in (5, 6, 7) else None)
 put(db, t2 + 3 + len(VENUES), 1, "Green = linked from other sheets. Red cells: Bridg lower / going direct pays more; blue: Bridg higher / Bridg pays more. "
     "Hypotheses in Issues are unverified.", MUTED)
 

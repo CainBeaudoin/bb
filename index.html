@@ -240,14 +240,22 @@ a { color: var(--s1); }
   </section>
 
   <section>
+    <div class="sec-head"><h2>Timing & synchronization</h2>
+      <p>Each row is one synchronized run. Every site's page gets "100" typed at the same instant ("typed"). Each
+        waits for its quote to settle, then all sites read the value that gets compared at the same instant ("values
+        read"). The spreads show how far apart those moments were across sites. Times are UTC.</p></div>
+    <div class="card tbl-scroll"><table class="data" id="sync"></table></div>
+  </section>
+
+  <section>
     <div class="sec-head"><h2>How this was measured</h2></div>
     <div class="card">
       <ul class="method">
         <li>Each site was opened in its own fresh Playwright Chromium browser, with no shared cookies and no wallet. Nothing
           was connected, signed or swapped.</li>
         <li>For each route, all six sites load with the route already selected. The runner then types <code>100</code>
-          into every page at the same moment and records when the quote appears. Every venue's quote appeared within
-          ~1.2 s of Bridg's.</li>
+          into every page at the same moment. Once every site's quote has settled, all of them read the value that gets
+          compared at the same moment (a second barrier). The timing table above shows how close each run was.</li>
         <li>Gap in bps = (Bridg's listed quote − venue's own quote) ÷ 100 × 10,000. Negative means Bridg shows less.
           "Excluding Bridg fee" adds Bridg's own platform fee back, so the gap reflects only the venue's price.</li>
         <li>USDC contracts: Solana <code>EPjF…Dt1v</code>, Ethereum <code>0xA0b8…eB48</code>, Base
@@ -311,8 +319,10 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
   const sumBy = {}; D.summary.forEach(s => sumBy[s.route + "|" + s.venue] = s);
 
   // meta + tiles
+  const ms = (x) => x == null ? "—" : (x * 1000).toFixed(0) + " ms";
   $("meta").append(
-    el("span", { text: `Collected ${D.window.first.slice(0, 10)}, ${time(D.window.first).slice(0, 5)}–${time(D.window.last).slice(0, 5)} UTC` }),
+    el("span", { text: `Campaign ${D.campaign || "—"}: every quote collected ${D.window.first.slice(0, 10)}, ${time(D.window.first).slice(0, 8)}–${time(D.window.last).slice(0, 8)} UTC` }),
+    el("span", { text: `compared values read within ${ms(D.sync && D.sync.max_value_read_spread_s)} of each other in every run` }),
     el("span", { text: `${D.routes.length} routes` }),
     el("span", { text: `${D.n_runs} synchronized runs` }),
     el("span", { text: `${D.n_records} quote records` }));
@@ -326,6 +336,7 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
     ["Bridg lower", lower.length, "pairs where Bridg's listing pays less than the venue's own site"],
     ["Not listed", notListed, "pairs where the venue quoted on its own site but was missing from Bridg"],
     ["Worst gap", sgn(worst) + " bps", "largest shortfall, excluding Bridg's own fee"],
+    ["Sync (worst run)", ms(D.sync && D.sync.max_value_read_spread_s), "largest gap between the moments sites' compared values were read in one synchronized run (target ≤ 2 s)"],
     ["Venues checked", V.length + " + " + (D.blocked || []).length, "venues cross-checked on their own site + venues blocked (no public quote: needs login, wallet or address, or route not offered)"],
   ];
   $("tiles").append(...tiles.map(([k, v, l]) => el("div", { class: "card tile" }, el("div", { class: "k", text: k }), el("div", { class: "v", text: v }), el("div", { class: "l", text: l }))));
@@ -462,20 +473,22 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
 
   function drawRoute() {
     const route = $("route").value, sample = +$("sample").value;
-    $("route-title").textContent = arrow(route) + " — Bridg vs each venue";
+    const rt = (D.sync_runs || []).filter(x => x.route === route).map(x => `s${x.sample} ${time(x.valueReadAt).slice(0, 8)}`);
+    $("route-title").textContent = arrow(route) + " — Bridg vs each venue" + (rt.length ? `  ·  read at ${rt.join(", ")} UTC` : "");
     drawDot(route);
     // samples table
     const st = $("samples"); st.replaceChildren();
-    st.append(el("thead", {}, el("tr", {}, ...["Venue", "S", "Bridg", "Venue", "Gap", "Ex-fee", "Δt s"].map((h, i) => el("th", { class: i > 1 ? "num" : "", text: h })))));
+    st.append(el("thead", {}, el("tr", {}, ...["Venue", "S", "Read at (UTC)", "Bridg", "Venue", "Gap", "Ex-fee", "Δ read"].map((h, i) => el("th", { class: i > 2 ? "num" : "", text: h })))));
     const tb = el("tbody");
     D.samples.filter(r => r.route === route).sort((a, b) => V.indexOf(a.venue) - V.indexOf(b.venue) || a.sample - b.sample).forEach(r => {
       const g = r.gap_ex_bridg_fee_bps;
       tb.append(el("tr", {}, el("td", { text: S[r.venue] }), el("td", { text: r.sample }),
+        el("td", { text: time(r.venue_valueReadAt || r.venue_quoteVisible) }),
         el("td", { class: "num", text: r.bridg_listed == null ? "not listed" : fmt(r.bridg_listed) }),
         el("td", { class: "num", text: fmt(r.direct_cmp), title: r.direct_note || "" }),
         el("td", { class: "num", text: sgn(r.gap_bps) }),
         el("td", { class: "num " + (g == null ? "" : g < -2 ? "neg" : g > 2 ? "pos" : ""), text: sgn(g) }),
-        el("td", { class: "num", text: r.gap_s == null ? "—" : r.gap_s.toFixed(2) })));
+        el("td", { class: "num", text: r.read_gap_s == null ? (r.gap_s == null ? "—" : r.gap_s.toFixed(2) + " s") : ms(r.read_gap_s) })));
     });
     st.append(tb);
     // board
@@ -503,8 +516,10 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
     D.receipts.filter(r => r.route === route && r.sample === sample).sort((a, c) => order.indexOf(a.site) - order.indexOf(c.site)).forEach(r => {
       const dl = el("dl");
       const add = (k, v, c) => dl.append(el("dt", { text: k }), el("dd", { class: c || "", text: v }));
-      add("typed", time(r.requestStart)); add("quote", time(r.quoteVisible)); add("shot", time(r.screenshotAt));
-      if (r.gap_s != null) add("Δ vs Bridg", r.gap_s.toFixed(3) + " s");
+      add("typed", time(r.requestStart)); add("1st quote", time(r.quoteVisible));
+      if (r.valueReadAt) add("value read", time(r.valueReadAt));
+      add("screenshot", time(r.screenshotAt));
+      if (r.gap_s != null) add("Δ vs Bridg", ms(r.gap_s));
       add("sha256", r.crop.sha256.slice(0, 16) + "…", "sha");
       const link = el("a", { class: "img", href: (D.full_base || "") + r.full.path, target: "_blank", rel: "noopener" },
         el("img", { src: r.crop.path, loading: "lazy", alt: `${S[r.site]} quote screenshot, ${arrow(r.route)} sample ${r.sample}` }));
@@ -513,6 +528,16 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
     });
     if (!g.children.length) g.append(el("p", { class: "meta", text: "No receipts for this route and sample." }));
   }
+
+  // sync table
+  const sy = $("sync");
+  sy.append(el("thead", {}, el("tr", {}, ...["Route", "S", "Typed at", "Values read at", "Typed spread", "Read spread", "Screenshot spread", "Sites"].map((h, i) => el("th", { class: i > 3 ? "num" : "", text: h })))));
+  const syb = el("tbody");
+  (D.sync_runs || []).forEach(x => syb.append(el("tr", {}, el("td", { text: arrow(x.route) }), el("td", { text: x.sample }),
+    el("td", { text: (x.typedAt || "").replace("T", " ").slice(0, 23) }), el("td", { text: (x.valueReadAt || "").replace("T", " ").slice(0, 23) }),
+    el("td", { class: "num", text: ms(x.typed_spread_s) }), el("td", { class: "num", text: ms(x.value_read_spread_s) }),
+    el("td", { class: "num", text: ms(x.screenshot_spread_s) }), el("td", { class: "num", text: `${x.n_ok}/${x.n_sites}` }))));
+  sy.append(syb);
 
   // failures
   $("fail-sum").textContent = `${D.failures.length} runs where a site didn't return a quote (kept in the raw data)`;

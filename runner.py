@@ -16,17 +16,21 @@ CROP = {  # x, y, w, h at 1400x1000 viewport
     "lifi": (270, 160, 900, 740), "across": (370, 260, 660, 480), "mayan": (470, 140, 460, 600),
 }
 BRIDG_NAMES = {"relay": "Relay", "across": "Across", "mayan": "Mayan", "lifi": "Lifi", "debridge": "Debridge"}
-MAX_GAP_S = 5.0
+MAX_GAP_S = 2.0  # spec target: compared values read within 2 s of Bridg's
 
 
 class Barrier:
     def __init__(self, n):
         self.n, self.count, self.ev = n, 0, asyncio.Event()
 
-    async def wait(self):
+    def arrive(self):
+        """Count this participant without waiting (used by sites that dropped out)."""
         self.count += 1
         if self.count >= self.n:
             self.ev.set()
+
+    async def wait(self):
+        self.arrive()
         await self.ev.wait()
 
 
@@ -42,9 +46,10 @@ def sha(path):
     return hashlib.sha256(open(path, "rb").read()).hexdigest()
 
 
-async def run_site(browser, name, route, run_dir, barrier, sample):
+async def run_site(browser, name, route, run_dir, barrier, sample, snap, campaign):
     a = ADAPTERS[name]
-    rec = {"site": name, "route": f"{route[0]}->{route[1]}", "sample": sample, "amount_in_typed": 100}
+    rec = {"site": name, "route": f"{route[0]}->{route[1]}", "sample": sample, "amount_in_typed": 100,
+           "campaign": campaign}
     ctx = await browser.new_context(viewport={"width": 1400, "height": 1000}, locale="en-US")
     page = await ctx.new_page()
     try:
@@ -61,6 +66,7 @@ async def run_site(browser, name, route, run_dir, barrier, sample):
         rec["url"] = page.url
     except Exception as e:
         rec["status"] = "SETUP_FAILED"
+        snap.arrive()
         await barrier.wait()  # still release the barrier for others
         await page.screenshot(path=f"{run_dir}/{name}_{route[0]}-{route[1]}_s{sample}_setupfail.png")
         await ctx.close()
@@ -72,6 +78,7 @@ async def run_site(browser, name, route, run_dir, barrier, sample):
         await a.enter(page)
     except Exception as e:
         rec["status"] = "ENTER_FAILED"; rec["error"] = repr(e)[:300]
+        snap.arrive()
         await ctx.close(); return rec
 
     q, t0 = None, time.monotonic()
@@ -94,9 +101,14 @@ async def run_site(browser, name, route, run_dir, barrier, sample):
                 break
             await page.wait_for_timeout(300)
         rec["status"] = "OK"
+    rec["settledAt"] = iso(now())
+    # snapshot barrier: every site waits until all have a settled quote (or dropped out), then all
+    # read their value at the same moment — this is the value that gets compared
+    await snap.wait()
     base = f"{run_dir}/{name}_{route[0]}-{route[1]}_s{sample}"
-    rec["screenshotAt"] = iso(now())
+    rec["valueReadAt"] = iso(now())
     q_final = await a.read(page) or q
+    rec["screenshotAt"] = iso(now())
     await page.screenshot(path=base + "_full.png", full_page=True)
     x, y, w, h = getattr(a, "crop", None) or CROP.get(name, (0, 0, 1400, 1000))
     await page.screenshot(path=base + "_crop.png", clip={"x": x, "y": y, "width": w, "height": h})
@@ -115,22 +127,32 @@ async def run_site(browser, name, route, run_dir, barrier, sample):
     return rec
 
 
-async def run_route(browser, route, sites, run_dir, sample, out):
+def _t(s):
+    return datetime.fromisoformat(s[:-1])
+
+
+async def run_route(browser, route, sites, run_dir, sample, out, campaign):
     sites = [s for s in sites if tuple(route) in [tuple(x) for x in (getattr(ADAPTERS[s], "routes", None) or [tuple(route)])]]
-    barrier = Barrier(len(sites))
-    recs = await asyncio.gather(*[run_site(browser, s, route, run_dir, barrier, sample) for s in sites])
+    barrier, snap = Barrier(len(sites)), Barrier(len(sites))
+    recs = await asyncio.gather(*[run_site(browser, s, route, run_dir, barrier, sample, snap, campaign) for s in sites])
     by = {r["site"]: r for r in recs}
     b = by.get("bridg", {})
     for r in recs:
-        if r is not b and r.get("quoteVisible") and b.get("quoteVisible"):
-            gap = abs((datetime.fromisoformat(r["quoteVisible"][:-1]) -
-                       datetime.fromisoformat(b["quoteVisible"][:-1])).total_seconds())
-            r["gap_vs_bridg_s"] = round(gap, 3)
-            r["gap_flag"] = gap > MAX_GAP_S
+        if r is not b and r.get("valueReadAt") and b.get("valueReadAt"):
+            # the compared values were read at valueReadAt; quoteVisible gap kept for reference
+            r["gap_vs_bridg_s"] = round(abs((_t(r["valueReadAt"]) - _t(b["valueReadAt"])).total_seconds()), 3)
+            if r.get("quoteVisible") and b.get("quoteVisible"):
+                r["first_quote_gap_vs_bridg_s"] = round(abs((_t(r["quoteVisible"]) - _t(b["quoteVisible"])).total_seconds()), 3)
+            r["gap_flag"] = r["gap_vs_bridg_s"] > MAX_GAP_S
+    ok = [r for r in recs if r.get("valueReadAt")]
+    spread = lambda k: round((max(_t(r[k]) for r in ok) - min(_t(r[k]) for r in ok)).total_seconds(), 3) if len(ok) > 1 else 0.0
+    sync = {"typed_spread_s": spread("requestStart"), "value_read_spread_s": spread("valueReadAt"),
+            "screenshot_spread_s": spread("screenshotAt"), "n_sites": len(recs), "n_ok": len(ok)}
     run_id = uuid.uuid4().hex[:12]
     with open(out, "a") as f:
         for r in recs:
             r["run_id"] = run_id
+            r["run_sync"] = sync
             f.write(json.dumps(r) + "\n")
     return recs
 
@@ -142,26 +164,31 @@ async def main():
     ap.add_argument("--sites", default=",".join(ADAPTERS))
     ap.add_argument("--headed", action="store_true")
     ap.add_argument("--out", default="data/raw_quotes.jsonl")
+    ap.add_argument("--campaign", default=None, help="campaign id (default: UTC start stamp)")
     args = ap.parse_args()
     sites = args.sites.split(",")
     routes = [tuple(r.split("-")) for r in args.routes.split(",")]
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     run_dir = f"evidence/{stamp}"
+    campaign = args.campaign or stamp
     os.makedirs(run_dir, exist_ok=True); os.makedirs(os.path.dirname(args.out), exist_ok=True)
     async with async_playwright() as pw:
         browser = await pw.chromium.launch(headless=not args.headed)
         for sample in range(1, args.samples + 1):
             for route in routes:
                 t = time.monotonic()
-                recs = await run_route(browser, route, sites, run_dir, sample, args.out)
-                # retry any site whose quote landed >5s from Bridg's (one retry, whole route)
-                if any(r.get("gap_flag") for r in recs):
+                recs = await run_route(browser, route, sites, run_dir, sample, args.out, campaign)
+                # retry sites whose compared value was read >2 s from Bridg's (up to 2 retries, with Bridg)
+                for attempt in range(2):
                     flagged = [r["site"] for r in recs if r.get("gap_flag")]
-                    print(f"  gap>5s for {flagged}; retrying route")
-                    recs = await run_route(browser, route, ["bridg"] + flagged, run_dir, sample, args.out)
+                    if not flagged:
+                        break
+                    print(f"  value read >2s from Bridg for {flagged}; retry {attempt + 1}")
+                    recs = await run_route(browser, route, ["bridg"] + flagged, run_dir, sample, args.out, campaign)
                 summ = " ".join(f"{r['site']}={(r.get('quote') or {}).get('out', (r.get('quote') or {}).get('best_out', r.get('status')))}"
                                 for r in recs)
-                print(f"[s{sample}] {route[0]}->{route[1]} ({time.monotonic()-t:.0f}s): {summ}", flush=True)
+                print(f"[s{sample}] {route[0]}->{route[1]} ({time.monotonic()-t:.0f}s) read-spread "
+                      f"{recs[0].get('run_sync', {}).get('value_read_spread_s')}s: {summ}", flush=True)
                 await asyncio.sleep(7)  # stay well under Bridg's 10 quotes/min/IP
         await browser.close()
 

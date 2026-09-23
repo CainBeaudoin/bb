@@ -1,0 +1,67 @@
+Discover
+Collections
+Tokens
+Swap
+Drops
+Activity
+Rewards
+Tools
+Beta
+Studio
+Profile
+Resources
+Settings
+Support
+/
+Connect Wallet
++24
+Swap everything
+Trade tokens across Ethereum, Solana, Base, Robinhood Chain, and more — all from one place, reliably, and instantly.
+Swap
+Buy
+AUTO
+2%
+Sell
+25%
+50%
+75%
+Max
+USDC
+Insufficient funds
+0.00 USDC
+Receive
+USDC
+0.00 USDC
+Destination wallet
+Select destination wallet
+Route
+LI.FI
+Provider's fee
+($0.00)
+0%
+OpenSea fee
+($0.00)
+0%
+Gas fee
+$0.02
+Est. Time
+3s
+Swap impact
+(-$0.07)
+-0.07%
+Max slippage
+2%
+Network
+Solana
+Base
+Connect Solana Wallet
+Aggregating
+Networks
+Terms of Service
+Privacy Policy
+$2,713.97
+Support
+Collector
+Pro
+Crypto
+USD
