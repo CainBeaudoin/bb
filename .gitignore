@@ -3,3 +3,4 @@ __pycache__/
 probe/
 .DS_Store
 profiles/
+pitch/preview*.png
