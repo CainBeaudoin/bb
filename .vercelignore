@@ -5,3 +5,4 @@ requirements-bench.txt
 probe/
 evidence/**/*_text.txt
 evidence/**/*_full.png
+profiles/
