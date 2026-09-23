@@ -1,0 +1,143 @@
+Bridg
+Swap
+Docs
+Connect wallet
+From
+Connect wallet
+USDC
+Solana
+≈ $99.97
+Connect a wallet to see your balance
+To
+Select Base wallet
+USDC
+Base
+99.947187
+≈ $99.92
+via Skip Go · 2m
+Live quotes
+live
+15 venues priced this amount
+Best price
+saves
+6 bps
+Fastest
+2s
+
+One shared price at 1% slippage. Yours is quoted when you execute.
+
+Skip Go
+Best price
+2m
+99.947187
+USDC
+Near Intents
+22s
+2 bps less
+99.92144
+USDC
+Across
+8s
+ties best
+99.940005
+USDC
+Rhino
+30s
+8 bps less
+99.860042
+USDC
+Relay
+Fastest
+2s
+6 bps less
+99.880608
+USDC
+Layerswap
+6s
+26 bps less
+99.679383
+USDC
+Lifi
+7s
+44 bps less
+99.500625
+USDC
+Debridge
+↑
+11s
+109 bps less
+98.85544
+USDC
+Simpleswap
+↑
+–
+237 bps less
+97.577961
+USDC
+Allbridge Core
+Compare only
+↑
+1m
+9 bps less
+99.85005
+USDC
+Cctp
+Compare only
+↑
+30s
+6 bps less
+99.885342
+USDC
+Eco
+Compare only
+↑
+20s
+ties best
+99.95
+USDC
+Husher
+↓
+5m
+39 bps less
+99.5502
+USDC
+Mayan
+Compare only
+3s
+5 bps less
+99.888543
+USDC
+Meson
+Compare only
+–
+9 bps less
+99.85005
+USDC
+You receive
+99.947187
+USDC
+Skip Go
+Best price
+Route
+Skip Go
+Receive at
+–
+You pay
+100 USDC
+$99.97
+Skip Go fee
+−0.002813 USDC
+−<$0.01
+Bridg fee
+−0.05 USDC
+−$0.04
+You receive
+99.947187 USDC
+$99.92
+Slippage
+1%
+Arrives in
+2m
+Connect wallet
+© 2026 Bridg · developed by
+Docs

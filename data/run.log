@@ -36,3 +36,15 @@
 [s3] BSC->SOL (19s): bridg=99.631328 relay=99.885571 debridge=99.920017 lifi=99.885571 across=99.982061 mayan=99.681 husher=99.35 layerswap=99.625611 meson=99.6 simpleswap=98.180301 symbiosis=98.419773
 [s3] SOL->Base (20s): bridg=99.947174 relay=99.951452 debridge=99.880033 lifi=100.0 across=99.99 mayan=99.927 allbridge=99.9 cctp=99.99 husher=99.45 layerswap=99.864301 meson=99.86 simpleswap=98.494293 skip-go=99.98517
 [s3] Base->SOL (21s): bridg=99.85005 relay=99.94557 debridge=99.920018 lifi=100.0 across=99.987 mayan=99.68 allbridge=99.9 cctp=99.977001 husher=99.35 layerswap=99.673486 meson=99.6 simpleswap=98.490632 skip-go=99.71585 symbiosis=98.394855
+[s1] SOL->ETH (12s): bridg=99.940005 opensea=99.8441
+[s1] ETH->SOL (12s): bridg=99.85005 opensea=99.7404
+[s1] SOL->Base (12s): bridg=99.947187 opensea=99.9306
+[s1] Base->SOL (13s): bridg=99.85005 opensea=99.7404
+[s2] SOL->ETH (11s): bridg=99.940005 opensea=99.8388
+[s2] ETH->SOL (10s): bridg=99.85005 opensea=99.7404
+[s2] SOL->Base (11s): bridg=99.947187 opensea=99.9385
+[s2] Base->SOL (10s): bridg=99.85005 opensea=99.7403
+[s3] SOL->ETH (11s): bridg=99.940005 opensea=99.7198
+[s3] ETH->SOL (12s): bridg=99.85005 opensea=99.7403
+[s3] SOL->Base (12s): bridg=99.947187 opensea=99.9385
+[s3] Base->SOL (12s): bridg=99.85005 opensea=99.7406

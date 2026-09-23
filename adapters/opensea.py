@@ -1,4 +1,4 @@
-"""OpenSea swap (https://opensea.io/swap) — cross-chain token swap widget, routed via Relay.
+"""OpenSea swap (https://opensea.io/swap) — cross-chain token swap widget, routed via Relay (LI.FI on some routes).
 
 Quotes are shown without a wallet (the CTA just says "Connect ... Wallet"; we never click it).
 Route is preselected via URL params discovered by picking tokens once:
@@ -44,6 +44,9 @@ class OpenSea:
     routes = [("SOL", "ETH"), ("ETH", "SOL"), ("SOL", "Base"), ("Base", "SOL")]
     unsupported_routes = ["SOL->BSC", "BSC->SOL"]  # BNB Chain not offered by OpenSea swap
 
+    def __init__(self):
+        self._total = {}
+
     async def setup(self, page, route):
         s, d = route
         await page.goto(f"https://opensea.io/swap?fromChain={SLUG[s]}&fromAddress={CHAINS[s]['usdc']}"
@@ -77,6 +80,9 @@ class OpenSea:
             return None
         usd = next((f["v"] for f in flows if f["v"].startswith("$")), None)
         t = await body_text(page)
+        total = re.search(rf"OpenSea Fee\n\$({NUM})", t)  # collapsed header shows total fees; gone once expanded
+        if total:
+            self._total[id(page)] = fnum(total.group(1))
         if "Provider's fee" not in t:  # expand the fee accordion (not a wallet/submit control)
             try:
                 await page.locator("button[aria-expanded]").filter(has_text="OpenSea Fee").first.click(timeout=3000)
@@ -84,20 +90,20 @@ class OpenSea:
                 t = await body_text(page)
             except Exception:
                 pass
-        total = re.search(rf"OpenSea Fee\n\$({NUM})", t)
         route = re.search(r"\nRoute\n([^\n]+)", t)
         pf, pf_ded, pf_pct = _money(t, "Provider's fee")
         of, of_ded, of_pct = _money(t, "OpenSea fee")
         gas, gas_ded, _ = _money(t, "Gas fee")
+        gas_raw = re.search(r"Gas fee\n([^\n]+)", t)
         eta = re.search(r"Est\. Time\n([^\n]+)", t)
         imp = re.search(r"Swap impact\n([^\n]+)\n(-?[\d.]+%)", t)
         slip = re.search(r"Max slippage\n([\d.]+%)", t)
         return {"out": out, "amount_in": 100.0, "out_usd": usd,
                 "provider": route.group(1).strip() if route else None,
-                "fee_total_usd": fnum(total.group(1)) if total else None,
+                "fee_total_usd": self._total.get(id(page)),  # provider + OpenSea + gas, USD
                 "provider_fee_usd": pf, "provider_fee_pct": pf_pct, "provider_fee_deducted": pf_ded,
                 "opensea_fee_usd": of, "opensea_fee_pct": of_pct,
-                "gas_fee_usd": gas, "fixed_fee_on_top": gas, "fixed_fee_token": "native (gas, USD shown)" if gas else None,
+                "gas_fee_usd": gas, "gas_fee_display": gas_raw.group(1) if gas_raw else None, "fixed_fee_on_top": gas, "fixed_fee_token": "native (gas, USD shown)" if gas else None,
                 "price_impact": f"{imp.group(1)} {imp.group(2)}" if imp else None,
                 "slippage": slip.group(1) if slip else None,
                 "eta": eta.group(1).strip() if eta else None,

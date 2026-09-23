@@ -76,6 +76,11 @@ for run_id, recs in runs.items():
             receipts[-1]["routes"] = q.get("routes")
 
 issues = [
+    {"severity": "info", "title": "Competitor platforms: Bridg beats OpenSea; the rest can't be quoted",
+     "detail": "OpenSea swap (Relay; LI.FI on SOL→Base; 0% OpenSea fee promo) pays 11–13 bps less than Bridg's best on "
+               "SOL→ETH, ETH→SOL and Base→SOL, and ~1 bp less on SOL→Base; OpenSea has no BNB Chain. Axiom and GMGN "
+               "block automated browsers (Cloudflare 403) and document no bridge; FOMO has no chain-to-chain transfer "
+               "('no bridges needed'); Pump.fun only offers login-gated deposits into Solana."},
     {"severity": "serious", "title": "Relay priced ~20.6 bps below relay.link on every EVM → Solana route",
      "detail": "Bridg's Relay row is 25.6 bps under relay.link on ETH→SOL, BSC→SOL and Base→SOL in every sample; "
                "5 bps is Bridg's own fee, leaving ~0.21 USDC more 'Relay fee'. Solana-source routes match. "
