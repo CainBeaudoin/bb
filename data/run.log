@@ -16,3 +16,23 @@
 [s3] BSC->SOL (19s): bridg=99.630254 relay=99.885574 across=99.981998 mayan=99.681 lifi=99.885574 debridge=99.880032
 [s3] SOL->Base (18s): bridg=99.947171 relay=99.952858 across=99.99 mayan=99.927 lifi=100.0 debridge=99.920018
 [s3] Base->SOL (18s): bridg=99.85005 relay=99.945573 across=99.987 mayan=99.68 lifi=100.0 debridge=99.920018
+[s1] SOL->ETH (22s): bridg=99.693094 relay=99.898059 debridge=99.880033 lifi=99.898059 across=99.99 mayan=99.3 allbridge=99.9 cctp=99.99 husher=99.05 layerswap=99.730239 meson=99.71 simpleswap=98.198817 skip-go=99.68411 symbiosis=98.942884
+  gap>5s for ['lifi']; retrying route
+[s1] ETH->SOL (74s): bridg=99.85005 lifi=99.945573
+[s1] SOL->BSC (20s): bridg=99.870039 relay=99.651251 debridge=99.920016 lifi=99.930623 across=99.982074 mayan=99.93 husher=99.65 layerswap=99.863073 meson=99.88 simpleswap=98.139
+[s1] BSC->SOL (19s): bridg=99.629905 relay=99.885572 debridge=99.920017 lifi=99.885572 across=99.982074 mayan=99.681 husher=99.35 layerswap=99.625559 meson=99.6 simpleswap=98.180301 symbiosis=98.417542
+[s1] SOL->Base (19s): bridg=99.947174 relay=99.952371 debridge=99.920018 lifi=100.0 across=99.99 mayan=99.927 allbridge=99.9 cctp=99.99 husher=99.45 layerswap=99.8643 meson=99.86 simpleswap=98.487552 skip-go=99.98517
+[s1] Base->SOL (59s): bridg=99.85005 relay=99.945574 debridge=99.920018 lifi=100.0 across=99.987 mayan=99.68 allbridge=99.9 cctp=99.977001 husher=99.35 layerswap=99.673459 meson=99.6 simpleswap=NO_QUOTE skip-go=99.71571 symbiosis=98.40936
+[s2] SOL->ETH (21s): bridg=99.940005 relay=99.889167 debridge=99.920018 lifi=99.889167 across=99.99 mayan=99.3006 allbridge=99.9 cctp=99.99 husher=99.05 layerswap=99.730237 meson=99.71 simpleswap=98.199007 skip-go=99.72108 symbiosis=98.913042
+[s2] ETH->SOL (22s): bridg=99.85005 relay=99.945574 debridge=99.920018 lifi=99.945574 across=99.99 mayan=99.546 allbridge=99.9 cctp=99.980001 husher=99.35 layerswap=99.673583 meson=99.1 simpleswap=98.485659 skip-go=99.71931 symbiosis=98.960719
+[s2] SOL->BSC (59s): bridg=99.870039 relay=99.64806 debridge=99.920015 lifi=99.930665 across=NO_QUOTE mayan=99.93 husher=99.65 layerswap=99.863078 meson=99.88 simpleswap=98.138895
+[s2] BSC->SOL (18s): bridg=99.629901 relay=99.885572 debridge=99.880032 lifi=99.885572 across=99.982045 mayan=99.681 husher=99.35 layerswap=99.625749 meson=99.6 simpleswap=98.180301 symbiosis=98.429487
+[s2] SOL->Base (20s): bridg=99.947174 relay=99.953163 debridge=99.880033 lifi=100.0 across=99.99 mayan=99.927 allbridge=99.9 cctp=99.99 husher=99.45 layerswap=99.864299 meson=99.86 simpleswap=98.487552 skip-go=99.98517
+[s2] Base->SOL (59s): bridg=99.85005 relay=99.945575 debridge=99.920018 lifi=100.0 across=99.987 mayan=99.68 allbridge=99.9 cctp=99.977001 husher=99.35 layerswap=99.673535 meson=99.6 simpleswap=NO_QUOTE skip-go=99.71585 symbiosis=98.395017
+  gap>5s for ['simpleswap']; retrying route
+[s3] SOL->ETH (37s): bridg=99.940005 simpleswap=98.198906
+[s3] ETH->SOL (21s): bridg=99.85005 relay=99.945573 debridge=99.920018 lifi=99.945573 across=99.99 mayan=99.4999 allbridge=99.9 cctp=99.980001 husher=99.35 layerswap=99.673465 meson=99.1 simpleswap=98.485152 skip-go=99.71945 symbiosis=98.940863
+[s3] SOL->BSC (20s): bridg=99.820079 relay=99.644547 debridge=99.880032 lifi=99.930665 across=99.982061 mayan=99.93 husher=99.65 layerswap=99.863082 meson=99.88 simpleswap=98.139
+[s3] BSC->SOL (19s): bridg=99.631328 relay=99.885571 debridge=99.920017 lifi=99.885571 across=99.982061 mayan=99.681 husher=99.35 layerswap=99.625611 meson=99.6 simpleswap=98.180301 symbiosis=98.419773
+[s3] SOL->Base (20s): bridg=99.947174 relay=99.951452 debridge=99.880033 lifi=100.0 across=99.99 mayan=99.927 allbridge=99.9 cctp=99.99 husher=99.45 layerswap=99.864301 meson=99.86 simpleswap=98.494293 skip-go=99.98517
+[s3] Base->SOL (21s): bridg=99.85005 relay=99.94557 debridge=99.920018 lifi=100.0 across=99.987 mayan=99.68 allbridge=99.9 cctp=99.977001 husher=99.35 layerswap=99.673486 meson=99.6 simpleswap=98.490632 skip-go=99.71585 symbiosis=98.394855

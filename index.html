@@ -492,7 +492,7 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
       add("typed", time(r.requestStart)); add("quote", time(r.quoteVisible)); add("shot", time(r.screenshotAt));
       if (r.gap_s != null) add("Δ vs Bridg", r.gap_s.toFixed(3) + " s");
       add("sha256", r.crop.sha256.slice(0, 16) + "…", "sha");
-      const link = el("a", { class: "img", href: r.full.path, target: "_blank", rel: "noopener" },
+      const link = el("a", { class: "img", href: (D.full_base || "") + r.full.path, target: "_blank", rel: "noopener" },
         el("img", { src: r.crop.path, loading: "lazy", alt: `${S[r.site]} quote screenshot, ${arrow(r.route)} sample ${r.sample}` }));
       g.append(el("div", { class: "card rc" }, link, el("div", { class: "body" },
         el("div", { class: "top" }, el("span", { class: "site", text: S[r.site] }), el("span", { class: "out", text: fmt(r.out) })), dl)));

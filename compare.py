@@ -89,7 +89,7 @@ def write_csv(rows, path="data/normalized.csv"):
         w.writerows(rows)
 
 
-def verdict(venue, gaps, listed_n, n):
+def verdict(venue, gaps, listed_n, n, raw=None):
     if listed_n == 0:
         return "NOT LISTED on Bridg"
     if not gaps:
@@ -98,6 +98,8 @@ def verdict(venue, gaps, listed_n, n):
     tol = 4 if venue == "mayan" else 2  # Mayan: Dutch-auction drift + 2-4 dp display rounding
     if abs(m) <= tol:
         return "Match (net of Bridg fee)"
+    if raw and abs(statistics.mean(raw)) <= tol:
+        return "Match (Bridg fee not applied)"
     return "Bridg LOWER than venue" if m < 0 else "Bridg HIGHER than venue"
 
 
@@ -118,7 +120,7 @@ def summarize(rows):
                     "gap_raw_bps": round(statistics.mean(raw), 1) if raw else None,
                     "gap_min": min(gaps) if gaps else None, "gap_max": max(gaps) if gaps else None,
                     "compare_only": any(r["bridg_compare_only"] for r in rs),
-                    "verdict": verdict(venue, gaps, len(bl), len(rs))})
+                    "verdict": verdict(venue, gaps, len(bl), len(rs), raw)})
     return out
 
 

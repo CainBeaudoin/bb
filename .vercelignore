@@ -4,3 +4,4 @@ requirements-bench.txt
 .venv/
 probe/
 evidence/**/*_text.txt
+evidence/**/*_full.png

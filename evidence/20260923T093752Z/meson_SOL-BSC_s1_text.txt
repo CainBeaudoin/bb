@@ -1,0 +1,20 @@
+Swap
+Account
+Rewards
+Explorer
+From
+Solana
+USDC
+To
+BNB Smart Chain
+USDC
+Amount
+Fee
+0.12 USDC
+You will receive
+99.88 USDC
+Get BNB on BNB Smart Chain
+Connect Your Wallet
+Learn more about Meson
+Connect Wallet
+427705453

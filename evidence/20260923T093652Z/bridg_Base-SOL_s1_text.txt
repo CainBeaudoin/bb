@@ -1,0 +1,135 @@
+Bridg
+Swap
+Docs
+Connect wallet
+From
+Connect wallet
+USDC
+Base
+≈ $99.98
+Connect a wallet to see your balance
+To
+Select Solana wallet
+USDC
+Solana
+99.85005
+≈ $99.83
+via Allbridge Core · 24m
+Live quotes
+live
+15 venues priced this amount
+Best price
+saves
+28 bps
+Fastest
+1s
+
+One shared price at 1% slippage. Yours is quoted when you execute.
+
+Allbridge Core
+Best price
+24m
+99.85005
+USDC
+Cctp
+30s
+7 bps less
+99.777855
+USDC
+Relay
+Fastest
+1s
+16 bps less
+99.690137
+USDC
+Skip Go
+18m
+16 bps less
+99.681442
+USDC
+Near Intents
+32s
+23 bps less
+99.612953
+USDC
+Layerswap
+22s
+25 bps less
+99.591703
+USDC
+Mayan
+3s
+21 bps less
+99.6308
+USDC
+Eco
+20s
+30 bps less
+99.5502
+USDC
+Husher
+6m
+40 bps less
+99.45025
+USDC
+Rhino
+30s
+42 bps less
+99.429926
+USDC
+Lifi
+1s
+86 bps less
+98.982776
+USDC
+Debridge
+1s
+97 bps less
+98.880449
+USDC
+Symbiosis
+3m
+144 bps less
+98.406834
+USDC
+Simpleswap
+–
+215 bps less
+97.699268
+USDC
+Meson
+–
+40 bps less
+99.45025
+USDC
+You receive
+99.85005
+USDC
+Allbridge Core
+Best price
+Route
+Allbridge Core
+Receive at
+–
+You pay
+100 USDC
+$99.98
+Allbridge Core fee
+−0.09995 USDC
+−$0.09
+Bridg fee
+−0.05 USDC
+−$0.04
+You receive
+99.85005 USDC
+$99.83
+Network fee, paid by your wallet in ETH
+0.000136 ETH
+$0.37
+Slippage
+1%
+Arrives in
+24m
+Connect wallet
+© 2026 Bridg · developed by
+Docs

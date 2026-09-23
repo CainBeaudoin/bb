@@ -1,0 +1,40 @@
+Swap
+Earn
+Stake SIS
+Pools
+Explorer
+Resources
+Connect wallet
+Arc Chain is Live! Swap cross-chain!
+Swap
+PRO
+Private
+Swap & Bridge
+From: Ethereum
+~$100
+Balance: -
+To: Solana
+Balance: -
+Best route
+Bridge
+to Solana
+Price impact
+0%
+Slippage
+2%
+Min received
+98.4659 USDC
+Price:
+1 USDC
+≈
+1.0105 USDC
+Estimated time:
+2 - 3 Min
+Fee:
+$1.03
+Your current slippage tolerance is 2%. The recommended value for this swap is 0.5%. Apply recommended slippage?
+Apply
+Connect Wallet
+New Symbiosis is here!
+5+ years in, Symbiosis has a new look. Same core, fresh identity, next chapter.
+Learn more

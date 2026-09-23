@@ -1,0 +1,41 @@
+Swap
+Liquidity
+Explorer
+Developers
+Connect wallet
+USDC
+from Base
+Connect wallet
+~24 min
+USDC
+to Solana
+Connect wallet
+Paste address
+Extra gas
+Relayer fee
+ETH
+Send
+Details
+100.00
+~24 min
+99.90
+
+0.000136
+
+0
+
+CCTP
+
+0.000136
+
+Transfer fee
+0.10 USDC
+
+Allbridge
+Guides
+X.com
+Github
+Discord
+Telegram
+
+Need help?

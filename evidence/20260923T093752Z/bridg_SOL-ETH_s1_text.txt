@@ -1,0 +1,142 @@
+Bridg
+Swap
+Docs
+Connect wallet
+From
+Connect wallet
+USDC
+Solana
+≈ $99.98
+Connect a wallet to see your balance
+To
+Select Ethereum wallet
+USDC
+Ethereum
+99.693094
+≈ $99.68
+via Relay · 5s
+Live quotes
+live
+16 venues priced this amount
+Best price
+saves
+49 bps
+Fastest
+5s
+
+One shared price at 1% slippage. Yours is quoted when you execute.
+
+Relay
+Best price
+Fastest
+5s
+99.693094
+USDC
+Skip Go
+2m
+4 bps less
+99.646196
+USDC
+Near Intents
+27s
+6 bps less
+99.629091
+USDC
+Layerswap
+26s
+14 bps less
+99.545941
+USDC
+Husher
+5m
+54 bps less
+99.1504
+USDC
+Lifi
+5s
+70 bps less
+98.988465
+USDC
+Symbiosis
+45s
+75 bps less
+98.942884
+USDC
+Debridge
+21s
+103 bps less
+98.663745
+USDC
+Rhino
+30s
+126 bps less
+98.429777
+USDC
+Simpleswap
+–
+226 bps less
+97.433809
+USDC
+Across
+8s
+24 bps more
+99.940005
+USDC
+Allbridge Core
+Compare only
+2m
+15 bps more
+99.85005
+USDC
+Cctp
+Compare only
+30s
+105 bps less
+98.645096
+USDC
+Eco
+Compare only
+20s
+25 bps more
+99.95
+USDC
+Mayan
+Compare only
+3s
+44 bps less
+99.250448
+USDC
+Meson
+Compare only
+–
+15 bps more
+99.85005
+USDC
+You receive
+99.693094
+USDC
+Relay
+Best price
+Route
+Relay
+Receive at
+–
+You pay
+100 USDC
+$99.98
+Relay fee
+−0.256907 USDC
+−$0.25
+Bridg fee
+−0.05 USDC
+−$0.04
+You receive
+99.693094 USDC
+$99.68
+Slippage
+1%
+Arrives in
+5s
+Connect wallet
+© 2026 Bridg · developed by
+Docs

@@ -1,0 +1,210 @@
+100
+99.98
+TRANSFER
+HISTORY
+SUPPORT
+DOCS
+CONNECT
+Bridge & swap across chains
+
+Fast. Cheap. Secure.
+
+From
+$99.92
+USDC
+Base
+To
+Set Recipient
+$99.82
+USDC
+Arbitrum
+Fast & Secure
+$0.02
+(-0.02%)
+$0.00
+~1 secs
+CONNECT WALLET
+SCROLL TO LEARN MORE
+
+THE CROSSCHAIN BRIDGE
+
+Move money across chains. Fast, cheap, secure.
+
+Across is the bridge that just works. Bridge and swap tokens between any supported chain in seconds. Enjoy low fees, no custodial risk, and the reliability to handle any transfer size. Over $39B moved. No user funds lost.
+
+Billions bridged. Trusted by the best.
+
+Numbers don't lie. Across powers crosschain transfers for the biggest names in crypto and millions of users around the world.
+
+VOLUME
+
+$39B+
+
+Dollars moved across chains by users and apps that rely on Across to deliver, every single time.
+
+USERS
+
+5M
+
+People trust Across with their money. From first-time bridgers to institutions moving millions.
+
+AVG SPEED
+
+1.2S
+
+Average time from confirmation to funds in your wallet. Most transfers land in under two seconds.
+
+Uniswap
+MetaMask
+Coinbase
+PancakeSwap
+const params = new URLSearchParams({
+  tradeType: "exactInput",
+  amount: "10000000", // 10 USDC
+  inputToken:
+    "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  outputToken:
+    "0x078D782b760474a361dDA0AF3839290b0EF57AD6",
+  originChainId: "8453", // Base
+  destinationChainId: "130", // Unichain
+  depositor: wallet.account.address,
+});
+const quote = await fetch(
+  `https://app.across.to/api/swap/approval?${params}`,
+  { headers: { Authorization: `Bearer ${KEY}` } },
+).then((r) => r.json());
+for (const tx of quote.approvalTxns ?? [])
+  await wallet.sendTransaction(tx);
+await wallet.sendTransaction(quote.swapTx);
+Need any help?
+Uniswap
+
+Uniswap integrated Across to bring native crosschain transfers directly into its app.
+
+In-app bridging
+Native support
+Easy integration
+
+Embedding token bridging directly into the Uniswap app
+
+"Users shouldn't have to switch between tabs to bridge tokens. We wanted to add crosschain bridging without adding complexity. Across gave us a single integration that covered a vast majority of chains we needed, with fast settlement and low fees out of the box."
+
+MEDHA KOTHARI
+PRODUCT @ UNISWAP
+READ DOCS
+#POWEREDBYACROSS
+Why Across?
+
+Moving funds between chains should be easy. Across delivers fast settlement, low fees, deep liquidity, proven security, and a simple experience for users and builders alike.
+
+READ DOCS
+Battle-tested. No user funds lost.
+
+Billions bridged with no user funds lost. Every transfer is verified onchain with no multisigs and no custodial risk. Trusted by the leading apps in DeFi.
+
+LEARN MORE
+Fast by default
+
+Across uses an intent-based design to deliver near-instant transfers. By the time other bridges quote, your transaction is already done.
+
+LEARN MORE
+Lower fees, every time
+
+Keep more of your money. Across is built to minimize costs on every transfer. No aggregator markup, no hidden fees. What you see is what you pay.
+
+LEARN MORE
+Decentralized & permissionless
+
+No 1/1 configurations. No single points of failure. Across runs on a permissionless relayer network where anyone can compete to fill transfers.
+
+LEARN MORE
+One integration, many chains
+
+Add crosschain bridging to your app with a single API. Clean docs, responsive support, and no aggregator dependencies. Your users will love you for it.
+
+LEARN MORE
+
+THE ACROSS BLOG
+
+Resources for a crosschain world
+JUL 14, 2026
+Robinhood Chain's First Week: CashCat, $1B in DEX Volume, and How to Get There
+
+CashCat, a flipped Hyperliquid, and $1 billion in week-one DEX volume: what actually happened on Robinhood Chain's first week, and how to bridge in while it's moving.
+
+4 MIN READ
+#RESEARCH
+AUG 10, 2026
+Across Integrates Paxos Labs' Transit for $50M Transfers
+3 MIN READ
+#PARTNERS
+JUL 27, 2026
+Canonical Bridges vs Third-Party Bridges: What's the Difference?
+5 MIN READ
+#BASICS
+JUL 15, 2026
+Bridge ETH to Base in Under 2 Seconds
+4 MIN READ
+#GUIDES
+READ MORE ARTICLES
+THE ACROSS ECOSYSTEM
+Supported Chains
+
+Bridge tokens across Ethereum, Hyperliquid, Base, Solana, BSC, and a growing list of supported networks.
+
+ETHEREUM
+ARBITRUM
+ROBINHOOD
+ARC
+OPTIMISM
+BASE
+POLYGON
+SOLANA
+ZKSYNC
+LINEA
+MODE
+LENS
+LIGHTER
+LISK
+ZORA
+WORLD CHAIN
+INK
+SONEIUM
+UNICHAIN
+BNB SMART CHAIN
+HYPEREVM
+PLASMA
+HYPERCORE
+MONAD
+MEGAETH
+TEMPO
+TRON
+AVALANCHE
+ACROSS
+Get the latest from Across.
+PRODUCT
+Transfer
+History
+Pool
+Rewards
+Docs
+COMPANY
+Careers
+Risk Labs
+Blog
+Support
+SOCIAL
+X
+Telegram
+POPULAR ROUTES
+Bridge to Ethereum
+Bridge to Robinhood
+Bridge to Arc
+Bridge to Solana
+Bridge to Arbitrum
+Bridge to Base
+Bridge to BNB Smart Chain
+Bridge to HyperEVM
+© 2026 - ACROSS PROTOCOL
+PRIVACY POLICY
+TERMS OF SERVICE

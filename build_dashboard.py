@@ -57,32 +57,47 @@ issues = [
                "5 bps is Bridg's own fee, leaving ~0.21 USDC more 'Relay fee'. Solana-source routes match. "
                "Hypothesis (unverified): Bridg's quote includes Solana USDC token-account rent that relay.link omits "
                "when no recipient wallet is set."},
+    {"severity": "serious", "title": "LI.FI and SimpleSwap rows are far below their own sites",
+     "detail": "LI.FI: 45–97 bps below jumper.exchange on every route (one Bridg breakdown showed a 1.0167 USDC "
+               "'Lifi fee'). SimpleSwap: 47–130 bps below simpleswap.io's default floating 'Best rate' card. "
+               "Hypothesis (unverified): different route/rate type or an integrator fee in Bridg's requests."},
+    {"severity": "serious", "title": "Bridg lists venues whose own site can't quote these routes",
+     "detail": "Rhino.fi (Bridg's best price on SOL→BSC) — retail app shut down Aug 2026. Eco — its portal has no "
+               "Solana or BNB Chain, yet Bridg lists Eco on SOL↔ETH/Base. NEAR Intents — public app moved behind "
+               "a login. These rows can't be checked against a public UI."},
     {"severity": "serious", "title": "Across missing from Bridg on 4 of 6 routes",
      "detail": "Not listed on ETH→SOL, BSC→SOL, Base→SOL or SOL→BSC although across.to quotes 99.98–99.99. "
                "Where listed (SOL→ETH, SOL→Base) it matches exactly net of Bridg's fee."},
-    {"severity": "serious", "title": "LI.FI row 45–97 bps below jumper.exchange",
-     "detail": "Bridg's 'Lifi' quote is below Jumper's Best Return on every route; one Bridg breakdown showed "
-               "'Lifi fee 1.0167 USDC'. Jumper often routes via Relay or Polymer. Hypothesis (unverified): a different "
-               "LI.FI route or an integrator fee in Bridg's LI.FI request."},
-    {"severity": "warning", "title": "deBridge fixed fee is charged on top of the input on its own site",
-     "detail": "app.debridge.finance adds a 1.05–2.58 USDC fee on top of the 100 input; Bridg deducts it from output. "
-               "Compared on the same basis (direct out − fixed fee), deBridge matches — and Bridg appears not to "
-               "take its 5 bps on deBridge."},
-    {"severity": "warning", "title": "Jumper displayed 120.36 USDC out for 100 in (BSC→SOL, sample 2)",
-     "detail": "Mayan (Swift) route on jumper.exchange; screenshot receipt kept, value excluded from averages."},
-    {"severity": "warning", "title": "Across UI input stays disabled on BSC→SOL in ~half of loads",
-     "detail": "Only 2 good samples for Across on BSC→SOL."},
-    {"severity": "info", "title": "BSC 'USDC' is Binance-Peg USDC everywhere",
-     "detail": "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d, 18 decimals — bridged, not native Circle USDC. "
-               "Every site including Bridg used this contract."},
-    {"severity": "info", "title": "Mayan shows 2–4 decimal places and moves between quotes",
-     "detail": "Dutch-auction (Swift) pricing; sub-bp comparisons on Mayan are not meaningful. "
-               "Bridg tags Mayan as 'Compare only' (not executable via Bridg)."},
+    {"severity": "warning", "title": "Meson, Husher and Allbridge look like flat estimates on Bridg",
+     "detail": "Their Bridg rows are exactly 99.85005 (= 99.9 × 0.9995) or 99.45025 (= 99.5 × 0.9995): round "
+               "outputs minus Bridg's 5 bps. Husher's own site is 0.10–0.20 USDC lower (Bridg +15 bps higher); "
+               "Meson's is +4 to +40 bps lower or 10 bps higher depending on route. Allbridge happens to match "
+               "(its site shows 99.90). Hypothesis: static fee models rather than live quotes."},
+    {"severity": "warning", "title": "Layerswap 3–13.5 bps below layerswap.io",
+     "detail": "Consistent across samples: −13.5 bps on Solana-source routes, −3 to −8 bps on routes into Solana, "
+               "after adding back Bridg's fee."},
+    {"severity": "warning", "title": "CCTP gap is a comparison limit, not a verdict",
+     "detail": "Circle's own bridge has no Solana, so CCTP is read from Portal (Wormhole). Portal hides its executor "
+               "fee until a wallet connects, so its 99.99 is before that fee; Bridg's 98.67 on SOL→ETH (−127 bps) "
+               "likely includes Ethereum destination gas."},
+    {"severity": "warning", "title": "Bridg's fee isn't applied to every venue",
+     "detail": "deBridge and Symbiosis match their own sites before adding back Bridg's 5 bps — Bridg appears not to "
+               "take its fee on those rows. deBridge's own site adds a 1.05–2.58 USDC fee on top of the input that "
+               "varies between loads; compared as out − fee, so Solana-source deBridge gaps swing."},
+    {"severity": "info", "title": "Matches",
+     "detail": "Skip Go (+1 to +2 bps), Allbridge Core (0.0), Across where listed (0.0), Mayan on most routes, and "
+               "Relay on Solana-source routes match their own sites net of Bridg's fee."},
+    {"severity": "info", "title": "Display quirks and anomalies",
+     "detail": "Jumper once showed 120.36 USDC out for 100 in (excluded). Mayan, Meson and Husher show only 1–4 "
+               "decimals. Across's input sometimes stays disabled on BSC→SOL. Allbridge charges a relayer fee on "
+               "top in SOL/ETH (not converted). BSC 'USDC' is Binance-Peg USDC (18 dp, bridged) on every site."},
 ]
+
 
 data = {
     "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
     "window": {"first": min(stamps), "last": max(stamps)},
+    "full_base": "https://raw.githubusercontent.com/CainBeaudoin/bb/main/",  # full-page PNGs stay out of the Vercel upload
     "amount": 100, "routes": ROUTE_ORDER, "sites": SITE_LABEL, "site_urls": SITE_URL,
     "venues": [n for n in ADAPTERS if n != "bridg"],
     "venue_routes": {n: ["->".join(r) for r in a.routes] for n, a in ADAPTERS.items() if getattr(a, "routes", None)},

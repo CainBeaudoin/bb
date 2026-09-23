@@ -1,0 +1,33 @@
+Swap
+USDC
+Explorer
+Transfers from Fogo may be delayed due to a Fogo network issue. Transfers will resume once the issue is resolved.
+USDC Transfer
+
+From
+
+Not connected
+
+USDC
+
+To
+
+Not connected
+
+USDC
+
+1 USDC = $1.00
+
+$99.98 (-0.02%)
+
+Connect source wallet
+
+Fastest
+Cheapest
+
+Routing via Circle CCTP
+
+8 sec
+Terms of service
+Privacy Policy
+FAQs

@@ -1,0 +1,20 @@
+Swap
+Account
+Rewards
+Explorer
+From
+Solana
+USDC
+To
+Base
+USDC
+Amount
+Fee
+0.14 USDC
+You will receive
+99.86 USDC
+Get ETH on Base
+Connect Your Wallet
+Learn more about Meson
+Connect Wallet
+427707391

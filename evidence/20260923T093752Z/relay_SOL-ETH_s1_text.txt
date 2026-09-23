@@ -1,0 +1,29 @@
+Swap
+Vaults
+Transactions
+/
+Connect
+Trending
+BNKR
+USELESS
+Swap
+Buy
+Sell
+Select wallet
+USDC
+Solana
+$99.99
+Buy
+Select wallet
+USDC
+Ethereum
+$99.89
+(-0.10%)
+Max Slippage
+Auto
+1.99%
+1 USDC = 0.9989 USDC
+~ 5s
+•
+$0.05
+CONNECT WALLET
