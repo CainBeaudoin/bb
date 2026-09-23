@@ -134,3 +134,46 @@ if __name__ == "__main__":
         g = f"{s['gap_ex_fee_bps']:+.1f}" if s["gap_ex_fee_bps"] is not None else "—"
         print(f"{s['route']:10} {s['venue']:9} {s['n']:>2} {s['n_listed']:>6} {f(s['bridg_avg']):>10} "
               f"{f(s['direct_avg']):>10} {g:>10} {rng:>13}  {s['verdict']}")
+
+
+def build_competitor_rows(runs):
+    """Bridg's best executable output vs what each other site (venue or platform) shows directly.
+    savings_bps = (Bridg best − other) / 100 × 10,000; positive = user gets more on Bridg."""
+    out = []
+    for run_id, recs in runs.items():
+        by = {r["site"]: r for r in recs}
+        b = by.get("bridg")
+        if not b or b.get("status") != "OK" or not b["quote"].get("best_out"):
+            continue
+        best = b["quote"]["best_out"]
+        for site, r in by.items():
+            if site == "bridg" or r.get("status") != "OK":
+                continue
+            q = r["quote"] or {}
+            other = q.get("out")
+            if q.get("fixed_fee_on_top") and q.get("fixed_fee_token") == "USDC":
+                other = other - q["fixed_fee_on_top"]
+            if other is None or other > 102:  # display anomaly, logged elsewhere
+                continue
+            out.append({"route": b["route"], "sample": b["sample"], "site": site, "run_id": run_id,
+                        "kind": getattr(ADAPTERS.get(site), "kind", "venue"),
+                        "bridg_best": best, "bridg_best_route": b["quote"].get("detail_route"),
+                        "other_out": round(other, 6),
+                        "savings_bps": round((best - other) / 100 * 1e4, 2),
+                        "fee_on_top_not_converted": bool(q.get("fixed_fee_on_top") and q.get("fixed_fee_token") != "USDC")})
+    return out
+
+
+def summarize_competitors(crows):
+    g = defaultdict(list)
+    for r in crows:
+        g[(r["route"], r["site"])].append(r)
+    res = []
+    for (route, site), rs in g.items():
+        s = [r["savings_bps"] for r in rs]
+        res.append({"route": route, "site": site, "kind": rs[0]["kind"], "n": len(rs),
+                    "bridg_best_avg": round(statistics.mean(r["bridg_best"] for r in rs), 6),
+                    "other_avg": round(statistics.mean(r["other_out"] for r in rs), 6),
+                    "savings_bps": round(statistics.mean(s), 1), "min": min(s), "max": max(s),
+                    "fee_on_top_not_converted": any(r["fee_on_top_not_converted"] for r in rs)})
+    return res

@@ -172,8 +172,20 @@ a { color: var(--s1); }
   </section>
 
   <section>
+    <div class="sec-head"><h2>Does a user get more on Bridg or by going direct?</h2>
+      <p>Bridg's best price, meaning what you'd actually receive on Bridg, compared with what each venue or platform
+        shows on its own site for the same 100 USDC at the same moment. Blue means Bridg pays more. Red means going
+        direct pays more. Gas paid separately on the source chain isn't counted on either side.</p></div>
+    <div class="card tbl-scroll" style="margin-bottom:12px"><table class="data" id="winners"></table></div>
+    <div class="card">
+      <div class="hm-scroll"><table class="hm" id="sv"></table></div>
+      <div class="scale" id="sv-scale"></div>
+    </div>
+  </section>
+
+  <section>
     <div class="sec-head row">
-      <div><h2>Bridg's quote vs. the venue's own site</h2>
+      <div><h2>Is Bridg's price for each venue accurate?</h2>
         <p id="hm-desc"></p></div>
       <div class="spacer"></div>
       <div class="toggle" role="group" aria-label="Basis">
@@ -307,7 +319,9 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
   const pairs = D.summary, matched = pairs.filter(p => p.verdict.startsWith("Match")).length;
   const lower = pairs.filter(p => p.verdict.startsWith("Bridg LOWER")), notListed = pairs.filter(p => p.verdict.startsWith("NOT")).length;
   const worst = Math.min(...pairs.filter(p => p.gap_ex_fee_bps != null).map(p => p.gap_ex_fee_bps));
+  const rw = D.route_winners || [];
   const tiles = [
+    ["Bridg best overall", rw.filter(w => w.savings_bps >= -2).length + " / " + rw.length, "routes where no venue or platform's own site paid more than Bridg's best price"],
     ["Match", matched + " / " + pairs.length, "route × venue pairs where Bridg's quote matches the venue's site (net of Bridg fee)"],
     ["Bridg lower", lower.length, "pairs where Bridg's listing pays less than the venue's own site"],
     ["Not listed", notListed, "pairs where the venue quoted on its own site but was missing from Bridg"],
@@ -509,7 +523,67 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
   ft.append(fb);
   $("foot").textContent = `Generated ${D.generated_at}. Pre-transaction quotes only; no wallet was connected, signed, or swapped.`;
 
-  drawHM(); drawRoute();
+
+  function drawSV() {
+    const wt = $("winners"); wt.replaceChildren();
+    wt.append(el("thead", {}, el("tr", {}, ...["Route", "Bridg best (avg)", "Best elsewhere", "Its quote", "Bridg vs best", "Sites Bridg beats", "Sites beating Bridg"].map((h, i) => el("th", { class: i && i !== 2 ? "num" : "", text: h })))));
+    const wb = el("tbody");
+    (D.route_winners || []).forEach(w => wb.append(el("tr", {}, el("td", { text: arrow(w.route) }), el("td", { class: "num", text: fmt(w.bridg_best) }),
+      el("td", { text: S[w.top_site] || w.top_site }), el("td", { class: "num", text: fmt(w.top_out) }),
+      el("td", { class: "num " + (w.savings_bps < -2 ? "neg" : w.savings_bps > 2 ? "pos" : ""), text: sgn(w.savings_bps) + " bps" }),
+      el("td", { class: "num", text: `${w.beats} of ${w.n_sites}` }), el("td", { class: "num", text: `${w.loses} of ${w.n_sites}` }))));
+    wt.append(wb);
+    const cBy = {}; (D.competitors || []).forEach(c => cBy[c.route + "|" + c.site] = c);
+    const t = $("sv"); t.replaceChildren();
+    t.append(el("thead", {}, el("tr", {}, el("th", { text: "" }), ...D.routes.map(r => el("th", { scope: "col", text: arrow(r) })))));
+    const tb = el("tbody");
+    const rowsOf = [...(D.platforms || []).map(p => [p, "platform"]), ...V.map(v => [v, "venue"])];
+    const blockedP = D.blocked_platforms || [];
+    const head = (txt) => tb.append(el("tr", {}, el("th", { colspan: String(D.routes.length + 1), style: "padding-top:12px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em", text: txt })));
+    let lastKind = null;
+    for (const [v, kind] of rowsOf) {
+      if (kind !== lastKind) { head(kind === "platform" ? "Competitor platforms" : "Bridge venues (their own sites)"); lastKind = kind; }
+      const tr = el("tr", {}, el("th", { scope: "row", text: S[v] || v }));
+      for (const r of D.routes) {
+        const c = cBy[r + "|" + v];
+        let td;
+        if (!c) {
+          td = el("td", { class: "na", tabindex: "0" }, el("span", { class: "n", text: "n/a" }), el("span", { class: "s", text: "no quote" }));
+        } else {
+          const tok = cls(c.savings_bps)[2];
+          td = el("td", { tabindex: "0", style: `background:var(--${tok});color:${inkFor(tok)}` },
+            el("span", { class: "n", text: sgn(c.savings_bps) }), el("span", { class: "s", text: fmt(c.other_avg, 3) }));
+        }
+        const nodes = () => c ? [el("div", { class: "tv", text: sgn(c.savings_bps) + " bps " + (c.savings_bps >= 0 ? "Bridg pays more" : "direct pays more") }),
+          el("div", { class: "tl", text: `${S[v]} · ${arrow(r)} · ${c.n} samples` }),
+          el("div", { class: "kr" }, el("b", { style: "background:var(--s1)" }), el("span", { text: "Bridg best " + fmt(c.bridg_best_avg) })),
+          el("div", { class: "kr" }, el("b", { style: "background:var(--s2)" }), el("span", { text: (S[v] || v) + " " + fmt(c.other_avg) })),
+          el("div", { class: "tl", text: `range ${sgn(c.min)} to ${sgn(c.max)}` + (c.fee_on_top_not_converted ? " · plus a fee on top in SOL/ETH, not counted" : "") })]
+          : [el("div", { class: "tl", text: "No quote from this site on this route" })];
+        td.addEventListener("pointermove", e => showTip(e, nodes()));
+        td.addEventListener("pointerleave", hideTip);
+        td.addEventListener("focus", () => focusTip(td, nodes()));
+        td.addEventListener("blur", hideTip);
+        tr.append(td);
+      }
+      tb.append(tr);
+      if (kind === "platform" && v === (D.platforms || []).slice(-1)[0]) {
+        for (const b of blockedP) tb.append(el("tr", {}, el("th", { scope: "row", text: b.label }),
+          el("td", { class: "na", colspan: String(D.routes.length) }, el("span", { class: "n", text: "Blocked" }), el("span", { class: "s", text: b.reason }))));
+      }
+    }
+    if (!(D.platforms || []).length && blockedP.length) {
+      const hdr = el("tr", {}, el("th", { colspan: String(D.routes.length + 1), style: "padding-top:12px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em", text: "Competitor platforms" }));
+      const rows = blockedP.map(b => el("tr", {}, el("th", { scope: "row", text: b.label }),
+        el("td", { class: "na", colspan: String(D.routes.length) }, el("span", { class: "n", text: "Blocked" }), el("span", { class: "s", text: b.reason }))));
+      tb.prepend(hdr, ...rows);
+    }
+    t.append(tb);
+    const sc = $("sv-scale"); sc.replaceChildren(el("span", { class: "lab", text: "Going direct pays more" }));
+    bins.forEach(b => sc.append(el("i", { style: `background:var(--${b[2]})` })));
+    sc.append(el("span", { class: "lab", text: "Bridg pays more" }));
+  }
+  drawSV(); drawHM(); drawRoute();
   window.__redraw = () => drawDot($("route").value);
   addEventListener("resize", () => drawDot($("route").value));
 }).catch(err => {

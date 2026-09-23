@@ -1,7 +1,7 @@
 """Package raw quotes + normalized comparison + receipts into dashboard/data.json for index.html."""
 import json, os
 from datetime import datetime, timezone
-from compare import load_runs, build_rows, summarize, write_csv
+from compare import load_runs, build_rows, summarize, write_csv, build_competitor_rows, summarize_competitors
 from sites import ADAPTERS, BLOCKED
 
 RAW = "data/raw_quotes.jsonl"
@@ -9,7 +9,8 @@ SITE_LABEL = {"bridg": "Bridg", "relay": "Relay", "across": "Across", "mayan": "
               "lifi": "LI.FI (Jumper)", "debridge": "deBridge", "layerswap": "Layerswap", "rhino": "Rhino.fi",
               "husher": "Husher", "simpleswap": "SimpleSwap", "meson": "Meson", "symbiosis": "Symbiosis",
               "near-intents": "NEAR Intents", "skip-go": "Skip Go", "eco": "Eco",
-              "allbridge-core": "Allbridge Core", "cctp": "CCTP"}
+              "allbridge-core": "Allbridge Core", "allbridge": "Allbridge Core", "cctp": "CCTP (via Portal)",
+              "opensea": "OpenSea", "axiom": "Axiom", "gmgn": "GMGN", "fomo": "FOMO", "pumpfun": "Pump.fun"}
 SITE_URL = {"bridg": "https://bridg.now/swap/", "relay": "https://relay.link", "across": "https://app.across.to",
             "mayan": "https://swap.mayan.finance", "lifi": "https://jumper.exchange",
             "debridge": "https://app.debridge.finance"}
@@ -23,6 +24,20 @@ runs = load_runs(RAW)
 rows = build_rows(runs)
 write_csv(rows)
 summary = summarize(rows)
+crows = build_competitor_rows(runs)
+csum = summarize_competitors(crows)
+
+# per route: Bridg's best vs the best any other site showed directly (averaged per site across samples)
+winners = []
+for route in ["SOL->ETH", "ETH->SOL", "SOL->BSC", "BSC->SOL", "SOL->Base", "Base->SOL"]:
+    cs = [c for c in csum if c["route"] == route]
+    if not cs:
+        continue
+    top = max(cs, key=lambda c: c["other_avg"])
+    winners.append({"route": route, "bridg_best": cs[0]["bridg_best_avg"], "top_site": top["site"],
+                    "top_out": top["other_avg"], "savings_bps": round((cs[0]["bridg_best_avg"] - top["other_avg"]) * 100, 1),
+                    "beats": sum(1 for c in cs if c["savings_bps"] > 2), "loses": sum(1 for c in cs if c["savings_bps"] < -2),
+                    "n_sites": len(cs)})
 
 boards, receipts, failures, stamps = [], [], [], []
 for run_id, recs in runs.items():
@@ -99,11 +114,14 @@ data = {
     "window": {"first": min(stamps), "last": max(stamps)},
     "full_base": "https://raw.githubusercontent.com/CainBeaudoin/bb/main/",  # full-page PNGs stay out of the Vercel upload
     "amount": 100, "routes": ROUTE_ORDER, "sites": SITE_LABEL, "site_urls": SITE_URL,
-    "venues": [n for n in ADAPTERS if n != "bridg"],
+    "venues": [n for n in ADAPTERS if n != "bridg" and getattr(ADAPTERS[n], "kind", "venue") == "venue"],
+    "platforms": [n for n in ADAPTERS if getattr(ADAPTERS[n], "kind", "venue") == "platform"],
     "venue_routes": {n: ["->".join(r) for r in a.routes] for n, a in ADAPTERS.items() if getattr(a, "routes", None)},
-    "blocked": [{"venue": k, "label": SITE_LABEL.get(k, k), **v} for k, v in BLOCKED.items()],
+    "blocked": [{"venue": k, "label": SITE_LABEL.get(k, k), **v} for k, v in BLOCKED.items() if v.get("kind", "venue") == "venue"],
+    "blocked_platforms": [{"venue": k, "label": SITE_LABEL.get(k, k), **v} for k, v in BLOCKED.items() if v.get("kind") == "platform"],
     "bridg_only": sorted({v["venue_id"] for bd in boards for v in bd["venues"]}
                          - {getattr(a, "bridg_id", None) for a in ADAPTERS.values()} - set(BLOCKED)),
+    "competitors": csum, "route_winners": winners,
     "summary": summary, "samples": rows, "boards": boards, "receipts": receipts,
     "failures": failures, "issues": issues,
     "n_runs": len(runs), "n_records": sum(len(v) for v in runs.values()),
