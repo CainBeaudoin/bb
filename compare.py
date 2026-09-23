@@ -46,15 +46,22 @@ def build_rows(runs):
           q = v.get("quote") or {}
           row["direct_out"] = q.get("out")
           row["direct_note"] = ""
-          if site == "debridge" and q.get("fixed_fee_on_top") is not None:
-              row["direct_fixed_fee"] = q["fixed_fee_on_top"]
-              row["direct_out_fee_adj"] = round(q["out"] - q["fixed_fee_on_top"], 6) \
-                  if q.get("fixed_fee_token") == "USDC" else None
-              row["direct_note"] = f"+{q['fixed_fee_on_top']} {q.get('fixed_fee_token')} charged on top of 100 input"
+          fee_top, fee_tok = q.get("fixed_fee_on_top"), q.get("fixed_fee_token")
+          if fee_top:
+              row["direct_fixed_fee"] = fee_top
+              if fee_tok == "USDC":
+                  row["direct_out_fee_adj"] = round(q["out"] - fee_top, 6)
+                  row["direct_note"] = f"+{fee_top} USDC charged on top of 100 input (subtracted)"
+              else:
+                  row["direct_note"] = f"+{fee_top} {fee_tok} charged on top of 100 input (not converted)"
           if site == "lifi":
               row["direct_note"] = f"Jumper Best Return via {q.get('best_return_venue')}; max route {q.get('max_out')}"
           if site == "mayan":
               row["direct_note"] = f"{q.get('mode')}; UI shows {q.get('display_decimals')} dp"
+          if site == "cctp":
+              row["direct_note"] = f"via Portal ({q.get('route_type') or q.get('route') or 'CCTP'}); executor fee hidden until wallet connect"
+          if site == "simpleswap":
+              row["direct_note"] = f"selected card: {q.get('selected_card')}; best card {q.get('best_card_out')}"
           cmp_direct = row.get("direct_out_fee_adj") or row["direct_out"]
           # a direct quote above the input by >2% is a display anomaly on that site: log it, don't average it
           if cmp_direct is not None and cmp_direct > 102:

@@ -312,7 +312,7 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
     ["Bridg lower", lower.length, "pairs where Bridg's listing pays less than the venue's own site"],
     ["Not listed", notListed, "pairs where the venue quoted on its own site but was missing from Bridg"],
     ["Worst gap", sgn(worst) + " bps", "largest shortfall, excluding Bridg's own fee"],
-    ["Venues checked", V.length + " + " + (D.blocked || []).length, "venues cross-checked on their own site + venues blocked (no quote without a wallet or address)"],
+    ["Venues checked", V.length + " + " + (D.blocked || []).length, "venues cross-checked on their own site + venues blocked (no public quote: needs login, wallet or address, or route not offered)"],
   ];
   $("tiles").append(...tiles.map(([k, v, l]) => el("div", { class: "card tile" }, el("div", { class: "k", text: k }), el("div", { class: "v", text: v }), el("div", { class: "l", text: l }))));
 
@@ -347,7 +347,7 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
       if (blockedBy[v]) {
         const bl = blockedBy[v];
         const td = el("td", { class: "na", colspan: String(D.routes.length), tabindex: "0" },
-          el("span", { class: "n", text: "Blocked — no quote without a wallet/address" }), el("span", { class: "s", text: bl.reason }));
+          el("span", { class: "n", text: "Blocked" }), el("span", { class: "s", text: bl.reason }));
         hook(td, () => [el("div", { class: "tv", text: "Blocked" }), el("div", { class: "tl", text: bl.reason }), el("div", { class: "tl", text: (bl.url || "") + (bl.checked ? " · checked " + bl.checked : "") })]);
         tr.append(td); tb.append(tr); continue;
       }

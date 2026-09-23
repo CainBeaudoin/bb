@@ -302,7 +302,7 @@ def _load_extra():
         if getattr(mod, "ADAPTER", None) is not None:
             ADAPTERS[mod.ADAPTER.name] = mod.ADAPTER
         if getattr(mod, "BLOCKED", None):
-            BLOCKED[m.name] = mod.BLOCKED
+            BLOCKED[mod.BLOCKED.get("bridg_id") or m.name.replace("_", "-")] = mod.BLOCKED
 
 
 _load_extra()
