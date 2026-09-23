@@ -20,3 +20,8 @@ BLOCKED = {
                 "https://docs.gmgn.ai/index/tg-wallet-import-export-private-key-deposit-withdraw",
                 "https://docs.gmgn.ai/index/cooperation-api-integrate-gmgn-eth-base-bsc-trading-api"],
 }
+
+
+# Signed-in re-check 2026-09-23T14:07:33Z
+BLOCKED["reason"] = 'BLOCKED — signed-in check (user logged in): wallet menu has Convert, but it requires binding 2FA (a security-setting change the user must make) and then a 3-hour lock before Convert works. Deposit accepts SOL/USDT/USDC/USD1 on the Solana network only.'
+BLOCKED["checked"] = '2026-09-23T14:07:33Z'

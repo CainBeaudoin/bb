@@ -21,3 +21,8 @@ BLOCKED = {
                 "https://fomo.family/blog/learn/a-guide-to-deposits-and-withdrawals",
                 "https://fomo.family/blog/learn/fomo-vs-phantom-wallet"],
 }
+
+
+# Signed-in re-check 2026-09-23T14:07:33Z
+BLOCKED["reason"] = 'BLOCKED — signed-in check (user logged in): deposits accept USDC from Solana, Base, BNB Chain, Monad, Robinhood Chain, Arc, Ethereum into one USD cash balance; no fee/quote is shown at deposit and moving funds out needs a balance. No chain-to-chain quote.'
+BLOCKED["checked"] = '2026-09-23T14:07:33Z'

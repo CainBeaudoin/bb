@@ -20,3 +20,8 @@ BLOCKED = {
                 "https://www.cryptopolitan.com/pump-fun-accepts-tokens-from-nine-chains/",
                 "https://thedefiant.io/news/defi/pump-fun-launches-usdc-paired-liquidity-pools-gi72da"],
 }
+
+
+# Signed-in re-check 2026-09-23T14:07:33Z
+BLOCKED["reason"] = "BLOCKED — signed-in check (user logged in): web Deposit is Solana-only ('Only send assets on the Solana network', min 0.01 SOL). No cross-chain quote on web; the MoonPay cross-chain deposit reported in news may be mobile-only."
+BLOCKED["checked"] = '2026-09-23T14:07:33Z'
