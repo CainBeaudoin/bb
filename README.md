@@ -25,3 +25,11 @@ After a new run:
 
 Findings text lives in `build_dashboard.py` (`issues`) — update it when the numbers change.
 Local preview: `python3 -m http.server 8765` then open http://localhost:8765.
+
+## Workbook
+
+    .venv/bin/python build_dashboard.py && .venv/bin/python build_xlsx.py
+
+`Bridg_Competitive_Benchmark.xlsx`: Dashboard, Competitor Matrix, Venue Analysis, Receipts, Platform Registry,
+Raw Quotes, Issues, One-Pager Export. Observations are blue inputs; gaps, savings, averages and verdicts are live
+formulas (recalculated on open).

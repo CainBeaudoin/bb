@@ -34,9 +34,18 @@ for route in ["SOL->ETH", "ETH->SOL", "SOL->BSC", "BSC->SOL", "SOL->Base", "Base
     if not cs:
         continue
     top = max(cs, key=lambda c: c["other_avg"])
-    winners.append({"route": route, "bridg_best": cs[0]["bridg_best_avg"], "top_site": top["site"],
-                    "top_out": top["other_avg"], "savings_bps": round((cs[0]["bridg_best_avg"] - top["other_avg"]) * 100, 1),
-                    "beats": sum(1 for c in cs if c["savings_bps"] > 2), "loses": sum(1 for c in cs if c["savings_bps"] < -2),
+    # Bridg best averaged once per synchronized run (not weighted by how many sites quoted in that run)
+    bb = [r["quote"]["best_out"] for recs in runs.values() for r in recs
+          if r["site"] == "bridg" and r["route"] == route and r.get("status") == "OK" and r["quote"].get("best_out")]
+    best = sum(bb) / len(bb)
+    per_site = {}
+    for c in crows:
+        if c["route"] == route:
+            per_site.setdefault(c["site"], []).append(c["savings_bps"])
+    means = [sum(v) / len(v) for v in per_site.values()]
+    winners.append({"route": route, "bridg_best": round(best, 6), "top_site": top["site"],
+                    "top_out": top["other_avg"], "savings_bps": round((best - top["other_avg"]) * 100, 1),
+                    "beats": sum(1 for m in means if m > 2), "loses": sum(1 for m in means if m < -2),
                     "n_sites": len(cs)})
 
 boards, receipts, failures, stamps = [], [], [], []
