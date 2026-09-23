@@ -147,12 +147,29 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1
   padding: 1px 5px; border-radius: 4px; }
 ul.method { margin: 8px 0 0; padding-left: 20px; color: var(--ink-2); font-size: 14px; }
 ul.method li { margin: 3px 0; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--grid); margin: -8px 0 24px; }
+.tabs button { border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; padding: 10px 14px;
+  font-weight: 600; color: var(--ink-2); margin-bottom: -1px; }
+.tabs button:hover { background: none; color: var(--ink); }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+.op-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.op-bar a.btn { font: inherit; font-size: 14px; color: var(--ink); background: var(--surface); border: 1px solid var(--ring);
+  border-radius: 8px; padding: 6px 12px; text-decoration: none; }
+.op-bar a.btn:hover { background: var(--surface-2); }
+.sheet-wrap { width: 100%; display: flex; justify-content: center; overflow: hidden; }
+.sheet { width: 816px; height: 1056px; border: 0; background: #fff; transform-origin: top left;
+  box-shadow: 0 2px 20px rgba(0,0,0,.18), 0 0 0 1px var(--ring); border-radius: 2px; }
 footer { margin-top: 48px; color: var(--muted); font-size: 12.5px; }
 a { color: var(--s1); }
 </style>
 </head>
 <body>
 <div class="wrap">
+  <nav class="tabs" role="tablist" aria-label="Views">
+    <button type="button" role="tab" id="tabbtn-data" aria-controls="tab-data" aria-selected="true" data-tab="data">Data</button>
+    <button type="button" role="tab" id="tabbtn-onepager" aria-controls="tab-onepager" aria-selected="false" data-tab="onepager">One-pager</button>
+  </nav>
+  <div id="tab-data" role="tabpanel" aria-labelledby="tabbtn-data">
   <header>
     <div>
       <h1>Bridg Benchmark</h1>
@@ -269,6 +286,16 @@ a { color: var(--s1); }
   </section>
 
   <footer id="foot"></footer>
+  </div>
+  <div id="tab-onepager" role="tabpanel" aria-labelledby="tabbtn-onepager" hidden>
+    <div class="op-bar">
+      <strong>Bridg × OpenSea</strong><span class="meta" style="margin:0">one Letter page (8.5 × 11 in), built from the same campaign as the Data tab</span>
+      <span class="spacer"></span>
+      <a class="btn" href="pitch/Bridg_x_OpenSea.pdf" download>Download PDF</a>
+      <a class="btn" href="pitch/opensea.html" target="_blank" rel="noopener">Open page</a>
+    </div>
+    <div class="sheet-wrap" id="sheet-wrap"><iframe class="sheet" id="sheet" title="Bridg × OpenSea one-pager" loading="lazy"></iframe></div>
+  </div>
 </div>
 <div class="tip" id="tip" role="tooltip"></div>
 
@@ -286,6 +313,31 @@ a { color: var(--s1); }
 })();
 
 const $ = (id) => document.getElementById(id);
+
+// tabs: Data | One-pager (hash-addressable: #data, #onepager)
+(() => {
+  const btns = [...document.querySelectorAll("[data-tab]")];
+  const fitSheet = () => {
+    const wrap = $("sheet-wrap"), f = $("sheet");
+    if (!wrap || wrap.offsetParent === null) return;
+    const k = Math.min(1, wrap.clientWidth / 816);
+    f.style.transform = k < 1 ? `scale(${k})` : "";
+    wrap.style.height = (1056 * k) + "px";
+    f.style.marginRight = k < 1 ? `${-816 * (1 - k)}px` : "";
+  };
+  const show = (name, push) => {
+    btns.forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === name)));
+    $("tab-data").hidden = name !== "data";
+    $("tab-onepager").hidden = name !== "onepager";
+    if (name === "onepager" && !$("sheet").getAttribute("src")) $("sheet").setAttribute("src", "pitch/opensea.html");
+    if (push) history.replaceState(null, "", "#" + name);
+    fitSheet();
+  };
+  btns.forEach(b => b.addEventListener("click", () => show(b.dataset.tab, true)));
+  addEventListener("resize", fitSheet);
+  addEventListener("hashchange", () => show(location.hash === "#onepager" ? "onepager" : "data"));
+  show(location.hash === "#onepager" ? "onepager" : "data");
+})();
 const el = (tag, props = {}, ...kids) => {
   const n = document.createElement(tag);
   for (const [k, v] of Object.entries(props)) {

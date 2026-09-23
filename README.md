@@ -70,6 +70,6 @@ No credentials, account emails, wallet/deposit addresses or session data are sto
 
     .venv/bin/python pitch/build_pitch.py   # → pitch/opensea.html, pitch/Bridg_x_OpenSea.pdf
 
-Page 1 is the pitch (route table, headline receipt, value props); page 2 has receipts for every shared route and the
-method. Numbers come from the latest campaign. Bridg's side uses its best *fully-priced* row: it leaves out Allbridge
+Exactly one Letter page (the build fails if the footer would overflow): route table, headline receipt, value props. It is also
+the dashboard's **One-pager** tab (`#onepager`). Numbers come from the latest campaign. Bridg's side uses its best *fully-priced* row: it leaves out Allbridge
 (relayer fee paid on top in ETH/SOL), Meson and Husher (flat formulas) and Rhino/Eco (no public UI to verify).
