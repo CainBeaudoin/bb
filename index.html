@@ -83,8 +83,9 @@ section { margin-top: 36px; }
 .hm-scroll { overflow-x: auto; }
 table.hm { border-collapse: separate; border-spacing: 2px; width: 100%; min-width: 640px; }
 .hm th { font-size: 13px; font-weight: 600; color: var(--ink-2); text-align: left; padding: 6px 8px; white-space: nowrap; }
+.hm tbody th { position: sticky; left: 0; background: var(--surface); z-index: 1; }
 .hm thead th { text-align: center; }
-.hm td { height: 56px; text-align: center; border-radius: 4px; font-variant-numeric: tabular-nums; cursor: default;
+.hm td { height: 50px; text-align: center; border-radius: 4px; font-variant-numeric: tabular-nums; cursor: default;
   position: relative; padding: 4px; outline-offset: 2px; }
 .hm td .n { font-size: 16px; font-weight: 600; display: block; }
 .hm td .s { font-size: 11px; opacity: .85; display: block; }
@@ -311,6 +312,7 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
     ["Bridg lower", lower.length, "pairs where Bridg's listing pays less than the venue's own site"],
     ["Not listed", notListed, "pairs where the venue quoted on its own site but was missing from Bridg"],
     ["Worst gap", sgn(worst) + " bps", "largest shortfall, excluding Bridg's own fee"],
+    ["Venues checked", V.length + " + " + (D.blocked || []).length, "venues cross-checked on their own site + venues blocked (no quote without a wallet or address)"],
   ];
   $("tiles").append(...tiles.map(([k, v, l]) => el("div", { class: "card tile" }, el("div", { class: "k", text: k }), el("div", { class: "v", text: v }), el("div", { class: "l", text: l }))));
 
@@ -330,16 +332,38 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
       ? "Average gap in bps with Bridg's own fee added back, so it shows whether Bridg reports the venue's price correctly. Red means Bridg shows less than the venue's site."
       : "Average gap in bps as a user sees it, including Bridg's platform fee (usually 5 bps). Red means Bridg shows less than the venue's site.";
     const t = $("hm"); t.replaceChildren();
-    t.append(el("thead", {}, el("tr", {}, el("th", { text: "" }), ...V.map(v => el("th", { scope: "col", text: S[v] })))));
+    t.append(el("thead", {}, el("tr", {}, el("th", { text: "" }), ...D.routes.map(r => el("th", { scope: "col", text: arrow(r) })))));
     const tb = el("tbody");
-    for (const r of D.routes) {
-      const tr = el("tr", {}, el("th", { scope: "row", text: arrow(r) }));
-      for (const v of V) {
+    const blockedBy = {}; (D.blocked || []).forEach(b => blockedBy[b.venue] = b);
+    const hook = (td, nodes, r) => {
+      td.addEventListener("pointermove", e => showTip(e, nodes()));
+      td.addEventListener("pointerleave", hideTip);
+      td.addEventListener("focus", () => focusTip(td, nodes()));
+      td.addEventListener("blur", hideTip);
+      if (r) td.addEventListener("click", () => { $("route").value = r; drawRoute(); $("route-title").scrollIntoView({ behavior: "smooth" }); });
+    };
+    for (const v of [...V, ...Object.keys(blockedBy)]) {
+      const tr = el("tr", {}, el("th", { scope: "row", text: S[v] || (blockedBy[v] && blockedBy[v].label) || v }));
+      if (blockedBy[v]) {
+        const bl = blockedBy[v];
+        const td = el("td", { class: "na", colspan: String(D.routes.length), tabindex: "0" },
+          el("span", { class: "n", text: "Blocked — no quote without a wallet/address" }), el("span", { class: "s", text: bl.reason }));
+        hook(td, () => [el("div", { class: "tv", text: "Blocked" }), el("div", { class: "tl", text: bl.reason }), el("div", { class: "tl", text: (bl.url || "") + (bl.checked ? " · checked " + bl.checked : "") })]);
+        tr.append(td); tb.append(tr); continue;
+      }
+      for (const r of D.routes) {
         const s = sumBy[r + "|" + v];
+        const supported = !D.venue_routes || !D.venue_routes[v] || D.venue_routes[v].includes(r);
         const g = s && (basis === "ex" ? s.gap_ex_fee_bps : s.gap_raw_bps);
-        let td;
-        if (!s || s.n_listed === 0) {
-          td = el("td", { class: "na", tabindex: "0" }, el("span", { class: "n", text: "Not listed" }), el("span", { class: "s", text: s && s.direct_avg ? "venue: " + fmt(s.direct_avg, 3) : "" }));
+        let td, nodes;
+        if (!supported) {
+          td = el("td", { class: "na", tabindex: "0" }, el("span", { class: "n", text: "n/a" }), el("span", { class: "s", text: "not on venue's site" }));
+          nodes = () => [el("div", { class: "tl", text: `${S[v]} doesn't offer ${arrow(r)} on its own site` })];
+        } else if (!s) {
+          td = el("td", { class: "na", tabindex: "0" }, el("span", { class: "n", text: "—" }), el("span", { class: "s", text: "no data" }));
+          nodes = () => [el("div", { class: "tl", text: "No completed sample for this pair" })];
+        } else if (s.n_listed === 0) {
+          td = el("td", { class: "na", tabindex: "0" }, el("span", { class: "n", text: "Not listed" }), el("span", { class: "s", text: s.direct_avg ? "venue: " + fmt(s.direct_avg, 3) : "" }));
         } else if (g == null) {
           td = el("td", { class: "na", tabindex: "0" }, el("span", { class: "n", text: "—" }), el("span", { class: "s", text: "no direct quote" }));
         } else {
@@ -347,22 +371,16 @@ fetch("dashboard/data.json").then(r => r.json()).then(D => {
           td = el("td", { tabindex: "0", style: `background:var(--${tok});color:${inkFor(tok)}` },
             el("span", { class: "n", text: sgn(g) }), el("span", { class: "s", text: s.compare_only ? "compare only" : s.n + " samples" }));
         }
-        const nodes = () => {
-          if (!s) return [el("div", { text: "No data" })];
+        nodes = nodes || (() => {
           const out = [];
           if (g != null) out.push(el("div", { class: "tv", text: sgn(g) + " bps" }));
           out.push(el("div", { class: "tl", text: `${S[v]} · ${arrow(r)}` }));
           out.push(el("div", { class: "kr" }, el("b", { style: "background:var(--s1)" }), el("span", { text: "Bridg " + fmt(s.bridg_avg) })));
           out.push(el("div", { class: "kr" }, el("b", { style: "background:var(--s2)" }), el("span", { text: "Venue " + fmt(s.direct_avg) })));
-          if (s.gap_min != null) out.push(el("div", { class: "tl", text: `range ${sgn(s.gap_min)} to ${sgn(s.gap_max)} (ex-fee) · ${s.verdict}` }));
-          else out.push(el("div", { class: "tl", text: s.verdict }));
+          out.push(el("div", { class: "tl", text: (s.gap_min != null ? `range ${sgn(s.gap_min)} to ${sgn(s.gap_max)} (ex-fee) · ` : "") + s.verdict }));
           return out;
-        };
-        td.addEventListener("pointermove", e => showTip(e, nodes()));
-        td.addEventListener("pointerleave", hideTip);
-        td.addEventListener("focus", () => focusTip(td, nodes()));
-        td.addEventListener("blur", hideTip);
-        td.addEventListener("click", () => { $("route").value = r; drawRoute(); $("route-title").scrollIntoView({ behavior: "smooth" }); });
+        });
+        hook(td, nodes, r);
         tr.append(td);
       }
       tb.append(tr);
