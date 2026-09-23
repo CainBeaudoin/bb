@@ -15,7 +15,7 @@ BSC "USDC" everywhere is Binance-Peg USDC 0x8AC7…580d (18 dp, bridged, not nat
 ## Dashboard (Vercel)
 
 `index.html` at the repo root is a static dashboard that reads `dashboard/data.json` and links the screenshots under `evidence/`.
-Deploy on Vercel as a plain static project (Framework preset: Other, no build command, output dir = repo root).
+Deploys on Vercel as a static site: `vercel.json` forces no framework/build, `.vercelignore` keeps the Python out. Install the runner deps with `pip install -r requirements-bench.txt`.
 
 After a new run:
 

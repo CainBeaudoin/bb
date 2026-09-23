@@ -1,0 +1,6 @@
+*.py
+tools/
+requirements-bench.txt
+.venv/
+probe/
+evidence/**/*_text.txt
